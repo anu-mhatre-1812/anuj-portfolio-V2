@@ -1,0 +1,640 @@
+.carousel-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f0;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  overflow: hidden;
+}
+
+// ─── Top Bar ────────────────────────────────────────────
+.ce-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.2rem;
+  background: #1a1a1a;
+  color: #fafafa;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.ce-topbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.ce-logo {
+  font-family: 'Rubik Scribble', cursive;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+.ce-subtitle {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.ce-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// ─── Body Layout ────────────────────────────────────────
+.ce-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// ─── Panels ─────────────────────────────────────────────
+.ce-panel {
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: #fafafa;
+  border-right: 1px solid #e0e0e0;
+
+  &--left {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &--right {
+    width: 260px;
+    border-right: none;
+    border-left: 1px solid #e0e0e0;
+  }
+}
+
+// ─── Prompt Section (empty state) ───────────────────────
+.ce-prompt-section {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ce-heading {
+  font-family: 'Rubik Scribble', cursive;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.ce-hint {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ce-prompt-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px solid #1a1a1a;
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  resize: vertical;
+  background: #fff;
+  outline: none;
+
+  &:focus {
+    border-color: #cc3333;
+  }
+}
+
+.ce-error-msg {
+  padding: 0.5rem 0.6rem;
+  background: #fff0f0;
+  border: 2px solid #cc3333;
+  border-radius: 2px;
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cc3333;
+}
+
+.ce-slide-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ce-count-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.ce-count-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #ddd;
+  background: #fff;
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #1a1a1a;
+  }
+
+  &.active {
+    background: #1a1a1a;
+    color: #fafafa;
+    border-color: #1a1a1a;
+  }
+}
+
+// ─── Slide Thumbnails ───────────────────────────────────
+.ce-slides-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.ce-slides-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ce-slide-thumbnails {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ce-thumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  background: #fff;
+
+  &:hover {
+    border-color: #ccc;
+  }
+
+  &.active {
+    border-color: #1a1a1a;
+    background: #f0f0f0;
+  }
+
+  &.dragging {
+    opacity: 0.4;
+  }
+}
+
+.ce-thumb-number {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #888;
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+.ce-thumb-preview {
+  flex: 1;
+  height: 2.5rem;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  overflow: hidden;
+}
+
+.ce-thumb-title {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.55rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ce-thumb-actions {
+  display: flex;
+  gap: 0.15rem;
+
+  button {
+    width: 1.3rem;
+    height: 1.3rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 0.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+
+    &:hover:not(:disabled) {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
+}
+
+// ─── Canvas Area ────────────────────────────────────────
+.ce-canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 1.5rem;
+  background:
+    linear-gradient(45deg, #e8e8e8 25%, transparent 25%),
+    linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e8e8e8 75%),
+    linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+.ce-canvas-wrapper {
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.ce-empty-state {
+  text-align: center;
+  color: #999;
+
+  .ce-empty-icon {
+    font-family: 'Rubik Scribble', cursive;
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-family: 'Cabin Sketch', cursive;
+    font-size: 1rem;
+  }
+}
+
+// ─── Preview Mode ───────────────────────────────────────
+.ce-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.ce-preview-slide {
+  position: relative;
+}
+
+.ce-preview-label {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #666;
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+
+// ─── Slide Canvas (1080×1350) ───────────────────────────
+.slide-canvas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.slide-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 72px;
+  box-sizing: border-box;
+}
+
+.slide-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 72px;
+  text-align: right;
+}
+
+.slide-footer-text {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 24px;
+  opacity: 0.5;
+}
+
+// ─── Slide Layouts ──────────────────────────────────────
+.slide-title {
+  font-size: 64px;
+  line-height: 1.1;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.02em;
+
+  &--large {
+    font-size: 80px;
+    text-align: center;
+  }
+
+  &--quote {
+    font-size: 56px;
+    font-style: italic;
+  }
+}
+
+.slide-content {
+  font-size: 30px;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.slide-divider {
+  width: 80px;
+  height: 4px;
+  background: currentColor;
+  margin: 0 0 32px 0;
+  opacity: 0.3;
+}
+
+.slide-cta {
+  margin-top: 48px;
+  font-size: 48px;
+  opacity: 0.6;
+}
+
+.slide-bullets,
+.slide-numbered-list {
+  margin: 32px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slide-bullet-item,
+.slide-numbered-item {
+  font-size: 28px;
+  line-height: 1.4;
+  padding: 12px 0;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.15;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.slide-numbered-list {
+  counter-reset: slide-counter;
+
+  .slide-numbered-item {
+    counter-increment: slide-counter;
+    padding-left: 48px;
+    position: relative;
+
+    &::before {
+      content: counter(slide-counter);
+      position: absolute;
+      left: 0;
+      font-family: 'Rubik Scribble', cursive;
+      font-weight: 700;
+    }
+  }
+}
+
+.slide-layout-split {
+  display: flex;
+  height: 100%;
+  gap: 48px;
+
+  .slide-split-left,
+  .slide-split-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.slide-quote-mark {
+  font-family: 'Rubik Scribble', cursive;
+  font-size: 120px;
+  line-height: 1;
+  opacity: 0.15;
+  margin-bottom: -20px;
+}
+
+.slide-image-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ─── Settings Panel ─────────────────────────────────────
+.ce-settings {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ce-settings-title {
+  font-family: 'Rubik Scribble', cursive;
+  font-size: 1rem;
+  margin: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed #ccc;
+}
+
+.ce-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ce-label {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.ce-input,
+.ce-select,
+.ce-textarea {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 2px solid #ddd;
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #1a1a1a;
+  }
+}
+
+.ce-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.ce-input--small {
+  flex: 1;
+}
+
+.ce-bullet-row {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.ce-file-input {
+  font-size: 0.75rem;
+}
+
+.ce-color-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.2rem;
+}
+
+.ce-color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.1s;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a1a1a;
+  }
+}
+
+.ce-action-row {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+// ─── Buttons ────────────────────────────────────────────
+.ce-btn {
+  padding: 0.45rem 0.8rem;
+  border: 2px solid #1a1a1a;
+  border-radius: 2px;
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &--primary {
+    background: #1a1a1a;
+    color: #fafafa;
+
+    &:hover:not(:disabled) {
+      background: #333;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: #1a1a1a;
+
+    &:hover:not(:disabled) {
+      background: #1a1a1a;
+      color: #fafafa;
+    }
+  }
+
+  &--danger {
+    background: transparent;
+    color: #cc3333;
+    border-color: #cc3333;
+
+    &:hover:not(:disabled) {
+      background: #cc3333;
+      color: #fff;
+    }
+  }
+
+  &--close {
+    background: transparent;
+    color: #fafafa;
+    border: none;
+    padding: 0.3rem;
+
+    &:hover {
+      color: #cc3333;
+    }
+  }
+
+  &--full {
+    width: 100%;
+    text-align: center;
+  }
+
+  &--small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  &--tiny {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.65rem;
+    border-width: 1px;
+  }
+}
