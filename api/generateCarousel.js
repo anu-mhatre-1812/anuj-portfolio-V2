@@ -63,6 +63,7 @@ Rules:
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
+                'x-opencode-session': `portfolio-${Date.now()}`,
             },
             body: JSON.stringify({
                 model: 'mimo-v2.5-free',
