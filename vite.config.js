@@ -46,7 +46,7 @@ function apiProxy() {
         try {
           const envPath = resolve(process.cwd(), '.env');
           const envContent = readFileSync(envPath, 'utf-8');
-          const match = envContent.match(/OPENROUTER_API_KEY=(.+)/);
+          const match = envContent.match(/ZEN_API_KEY=(.+)/);
           apiKey = match ? match[1].trim() : null;
         } catch (e) {
           apiKey = null;
@@ -54,7 +54,7 @@ function apiProxy() {
 
         if (!apiKey) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing OPENROUTER_API_KEY in .env' }));
+          res.end(JSON.stringify({ error: 'Missing ZEN_API_KEY in .env' }));
           return;
         }
 
@@ -117,22 +117,20 @@ Rules:
 - Every slide must feel like part of one designed system`;
 
         try {
-          const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          const apiRes = await fetch('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': 'https://anujmhatre.me',
-              'X-Title': 'Anuj Mhatre Portfolio Carousel',
             },
             body: JSON.stringify({
-              model: 'meta-llama/llama-3.3-8b-instruct:free',
+              model: 'mimo-v2.5-free',
               messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
               ],
               temperature: 0.7,
-              max_tokens: 4000,
+              max_tokens: 16000,
             }),
           });
 

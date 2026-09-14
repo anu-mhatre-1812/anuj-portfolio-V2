@@ -12,9 +12,9 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.ZEN_API_KEY;
     if (!apiKey) {
-        return res.status(500).json({ error: 'Missing OPENROUTER_API_KEY' });
+        return res.status(500).json({ error: 'Missing ZEN_API_KEY' });
     }
 
     const { prompt, slideCount = 5 } = req.body;
@@ -58,22 +58,20 @@ Rules:
 - Every slide must feel like part of one designed system`;
 
     try {
-        const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const apiRes = await fetch('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://anujmhatre.me',
-                'X-Title': 'Anuj Mhatre Portfolio Carousel',
             },
             body: JSON.stringify({
-                model: 'meta-llama/llama-3.3-8b-instruct:free',
+                model: 'mimo-v2.5-free',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
                 ],
                 temperature: 0.7,
-                max_tokens: 4000,
+                max_tokens: 16000,
             }),
         });
 

@@ -422,20 +422,31 @@ const CarouselEditor = ({ onClose }) => {
                             {generateError && (
                                 <div className="ce-error-msg">{generateError}</div>
                             )}
-                            <div className="ce-slide-count">
-                                <label className="ce-label">Slides:</label>
-                                <div className="ce-count-buttons">
-                                    {[3, 4, 5, 6, 7, 8].map(n => (
-                                        <button
-                                            key={n}
-                                            className={`ce-count-btn ${slideCount === n ? 'active' : ''}`}
-                                            onClick={() => setSlideCount(n)}
-                                        >
-                                            {n}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                              <div className="ce-slide-count">
+                                  <label className="ce-label">Slides: {slideCount}</label>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      <input
+                                          type="range"
+                                          min="2"
+                                          max="50"
+                                          value={slideCount}
+                                          onChange={(e) => setSlideCount(parseInt(e.target.value))}
+                                          style={{ flex: 1 }}
+                                      />
+                                      <input
+                                          type="number"
+                                          min="2"
+                                          max="50"
+                                          value={slideCount}
+                                          onChange={(e) => {
+                                              const v = parseInt(e.target.value);
+                                              if (v >= 2 && v <= 50) setSlideCount(v);
+                                          }}
+                                          className="ce-input"
+                                          style={{ width: '3rem', textAlign: 'center' }}
+                                      />
+                                  </div>
+                              </div>
                             <button
                                 className="ce-btn ce-btn--primary ce-btn--full"
                                 onClick={handleGenerate}
