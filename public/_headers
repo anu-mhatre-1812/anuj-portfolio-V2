@@ -1,33 +1,30 @@
-https://portfolio-itom.pages.dev/*
-  X-Robots-Tag: noindex
-
-https://itomdev.com/*
+https://anujmhatre.me/*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-# Cache static assets for 1 year (Performance & SEO Server Score)
-https://itomdev.com/*.js
+# Cache static assets for 1 year
+https://anujmhatre.me/*.js
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.css
+https://anujmhatre.me/*.css
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.webp
+https://anujmhatre.me/*.webp
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.png
+https://anujmhatre.me/*.png
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.ktx2
+https://anujmhatre.me/*.ktx2
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.glb
+https://anujmhatre.me/*.glb
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/*.mp3
+https://anujmhatre.me/*.mp3
   Cache-Control: public, max-age=31536000, immutable
 
-https://itomdev.com/fonts/*
+https://anujmhatre.me/fonts/*
   Cache-Control: public, max-age=31536000, immutable

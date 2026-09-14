@@ -78,7 +78,7 @@ Rules:
 
         if (!apiRes.ok) {
             const errText = await apiRes.text();
-            console.error('OpenRouter API error:', apiRes.status, errText);
+            console.error('Zen API error:', apiRes.status, errText);
             return res.status(apiRes.status).json({ error: `AI API error: ${apiRes.status}` });
         }
 

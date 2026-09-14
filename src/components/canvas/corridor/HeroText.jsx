@@ -97,7 +97,7 @@ const HeroText = ({ position = [0, 0.3, 0] }) => {
 
         splitAmount.current = THREE.MathUtils.lerp(splitAmount.current, targetSplit.current, 0.08);
 
-        // Apply split to each letter of ITOM
+        // Apply split to each letter of ANUJ
         letterRefs.current.forEach((ref, i) => {
             if (ref) {
                 // Ensure opacity is 1
