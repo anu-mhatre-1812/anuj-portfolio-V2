@@ -294,6 +294,8 @@ const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate
                 cursor: 'move',
                 userSelect: 'none',
             }}
+            data-orig-x={elem.x}
+            data-orig-y={elem.y}
             onPointerDown={(e) => {
                 onPointerDown(e, elem.id);
                 onSelect?.();
