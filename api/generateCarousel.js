@@ -27,21 +27,20 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 30000);
+            const timeout = setTimeout(() => controller.abort(), 45000);
 
+            // Use native Gemini API (better rate limits than OpenAI-compat endpoint)
             const response = await fetch(
-                'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`,
                 {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${GEMINI_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'gemini-3.6-flash',
-                        messages: [{ role: 'user', content: userMessage }],
-                        temperature: 0.7,
-                        max_tokens: maxTokens,
+                        contents: [{ parts: [{ text: userMessage }] }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: maxTokens,
+                        },
                     }),
                     signal: controller.signal,
                 }
@@ -49,9 +48,8 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
 
             clearTimeout(timeout);
 
-            // 429/503 = rate limited or overloaded — retry with backoff
             if (response.status === 429 || response.status === 503) {
-                const waitMs = (attempt + 1) * 3000;
+                const waitMs = (attempt + 1) * 5000;
                 console.warn(`Attempt ${attempt + 1}: ${response.status} — retrying in ${waitMs}ms`);
                 await new Promise(r => setTimeout(r, waitMs));
                 continue;
@@ -64,7 +62,7 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
             }
 
             const data = await response.json();
-            const content = data.choices?.[0]?.message?.content;
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             if (!content) {
                 console.error('Gemini empty response:', JSON.stringify(data).slice(0, 300));
@@ -113,7 +111,7 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
         } catch (err) {
             console.error(`Attempt ${attempt + 1} error:`, err.message);
             if (err.name === 'AbortError' && attempt < MAX_RETRIES - 1) {
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 3000));
                 continue;
             }
             if (attempt === MAX_RETRIES - 1) {
