@@ -19,103 +19,106 @@ JSON structure:
 
 Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last = CTA. Titles under 8 words, content under 30 words.`;
 
-    const GEMINI_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_KEY) return res.status(500).json({ error: 'Missing GEMINI_API_KEY' });
+    // Collect all available Gemini keys
+    const keys = [
+        process.env.GEMINI_API_KEY,
+        process.env.GEMINI_API_KEY_2,
+    ].filter(Boolean);
 
-    const MAX_RETRIES = 3;
+    if (keys.length === 0) return res.status(500).json({ error: 'No API keys configured' });
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        try {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 45000);
+    const MAX_RETRIES_PER_KEY = 2;
 
-            // Use native Gemini API (better rate limits than OpenAI-compat endpoint)
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: userMessage }] }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            maxOutputTokens: maxTokens,
-                        },
-                    }),
-                    signal: controller.signal,
-                }
-            );
+    for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+        const apiKey = keys[keyIdx];
 
-            clearTimeout(timeout);
-
-            if (response.status === 429 || response.status === 503) {
-                const waitMs = (attempt + 1) * 5000;
-                console.warn(`Attempt ${attempt + 1}: ${response.status} — retrying in ${waitMs}ms`);
-                await new Promise(r => setTimeout(r, waitMs));
-                continue;
-            }
-
-            if (!response.ok) {
-                const errText = await response.text();
-                console.error('Gemini API error:', response.status, errText.slice(0, 300));
-                return res.status(502).json({ error: `Gemini API error: ${response.status}` });
-            }
-
-            const data = await response.json();
-            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (!content) {
-                console.error('Gemini empty response:', JSON.stringify(data).slice(0, 300));
-                return res.status(500).json({ error: 'Empty AI response' });
-            }
-
-            // Parse JSON
-            let clean = content
-                .replace(/```(?:json)?\s*/gi, '')
-                .replace(/```\s*/g, '')
-                .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
-                .replace(/<think>[\s\S]*?<\/think>/gi, '')
-                .trim();
-
-            let parsed;
+        for (let attempt = 0; attempt < MAX_RETRIES_PER_KEY; attempt++) {
             try {
-                parsed = JSON.parse(clean);
-            } catch (e) {
-                const start = clean.indexOf('{');
-                if (start === -1) {
-                    console.error('No JSON in response:', clean.slice(0, 300));
-                    return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 45000);
+
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: userMessage }] }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                maxOutputTokens: maxTokens,
+                            },
+                        }),
+                        signal: controller.signal,
+                    }
+                );
+
+                clearTimeout(timeout);
+
+                if (response.status === 429 || response.status === 503) {
+                    const waitMs = (attempt + 1) * 3000;
+                    console.warn(`Key ${keyIdx + 1} attempt ${attempt + 1}: ${response.status} — waiting ${waitMs}ms`);
+                    await new Promise(r => setTimeout(r, waitMs));
+                    continue; // retry same key
                 }
-                let depth = 0, end = -1;
-                for (let i = start; i < clean.length; i++) {
-                    if (clean[i] === '{') depth++;
-                    else if (clean[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    console.error(`Key ${keyIdx + 1} error:`, response.status, errText.slice(0, 300));
+                    break; // skip to next key
                 }
-                if (end === -1) {
-                    console.error('Unmatched braces:', clean.slice(0, 300));
-                    return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+
+                const data = await response.json();
+                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!content) {
+                    console.error('Empty response:', JSON.stringify(data).slice(0, 300));
+                    break; // skip to next key
                 }
-                parsed = JSON.parse(clean.substring(start, end + 1));
-            }
 
-            if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
-                parsed.slides = [parsed.slides];
-            }
+                // Parse JSON
+                let clean = content
+                    .replace(/```(?:json)?\s*/gi, '')
+                    .replace(/```\s*/g, '')
+                    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+                    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                    .trim();
 
-            if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
-                return res.status(500).json({ error: 'AI response missing slides array' });
-            }
+                let parsed;
+                try {
+                    parsed = JSON.parse(clean);
+                } catch (e) {
+                    const start = clean.indexOf('{');
+                    if (start === -1) {
+                        console.error('No JSON:', clean.slice(0, 200));
+                        break;
+                    }
+                    let depth = 0, end = -1;
+                    for (let i = start; i < clean.length; i++) {
+                        if (clean[i] === '{') depth++;
+                        else if (clean[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+                    }
+                    if (end === -1) {
+                        console.error('Unmatched braces');
+                        break;
+                    }
+                    parsed = JSON.parse(clean.substring(start, end + 1));
+                }
 
-            return res.status(200).json(parsed);
+                if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
+                    parsed.slides = [parsed.slides];
+                }
 
-        } catch (err) {
-            console.error(`Attempt ${attempt + 1} error:`, err.message);
-            if (err.name === 'AbortError' && attempt < MAX_RETRIES - 1) {
-                await new Promise(r => setTimeout(r, 3000));
-                continue;
-            }
-            if (attempt === MAX_RETRIES - 1) {
-                return res.status(500).json({ error: 'AI service unavailable. Please try again in a moment.' });
+                if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
+                    break;
+                }
+
+                return res.status(200).json(parsed);
+
+            } catch (err) {
+                console.error(`Key ${keyIdx + 1} attempt ${attempt + 1} error:`, err.message);
+                if (err.name === 'AbortError') continue; // retry same key
+                break; // skip to next key on other errors
             }
         }
     }
