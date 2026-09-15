@@ -2,7 +2,7 @@
  * generateCarousel — Client-side API caller for AI carousel generation.
  *
  * Calls the local Vite proxy at /api/generateCarousel which forwards
- * to OpenCode Zen with the API key stored server-side.
+ * to Token Harbor with the API key stored server-side.
  *
  * In production (Vercel), this would call a serverless function instead.
  */
@@ -58,8 +58,8 @@ export async function generateCarousel(prompt, slideCount = 5, retries = 2) {
             }));
         } catch (err) {
             lastError = err;
-            // The server already tries each free Zen model once. Retrying a 429 from the
-            // browser immediately only increases pressure on an already busy free tier.
+            // The server already tries each Token Harbor fallback model once. Retrying a 429
+            // from the browser immediately only increases pressure on an already busy free tier.
             if (err.status === 429) break;
             if (attempt < retries) {
                 await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));

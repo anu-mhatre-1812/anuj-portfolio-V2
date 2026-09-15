@@ -41,12 +41,12 @@ function apiProxy() {
           return;
         }
 
-        // Read API key from .env
+        // Read the server-only Token Harbor key from .env.
         let apiKey;
         try {
           const envPath = resolve(process.cwd(), '.env');
           const envContent = readFileSync(envPath, 'utf-8');
-          const match = envContent.match(/ZEN_API_KEY=(.+)/);
+          const match = envContent.match(/^TOKENHARBOR_KEY=(.+)$/m);
           apiKey = match ? match[1].trim() : null;
         } catch (e) {
           apiKey = null;
@@ -54,7 +54,7 @@ function apiProxy() {
 
         if (!apiKey) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing ZEN_API_KEY in .env' }));
+          res.end(JSON.stringify({ error: 'Missing TOKENHARBOR_KEY in .env' }));
           return;
         }
 
@@ -73,13 +73,16 @@ function apiProxy() {
           return;
         }
 
-        const { prompt, slideCount = 5 } = parsed;
+        const { prompt, slideCount: requestedSlideCount = 5 } = parsed;
+        const slideCount = Math.min(50, Math.max(2, Number.parseInt(requestedSlideCount, 10) || 5));
 
         if (!prompt || typeof prompt !== 'string') {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Missing prompt' }));
           return;
         }
+
+        const maxTokens = Math.min(9000, Math.max(1400, slideCount * 175));
 
         const systemPrompt = `You are a carousel content creator for a creative developer portfolio. You MUST return ONLY valid JSON, no markdown, no explanations.
 
@@ -117,12 +120,12 @@ Rules:
 - Every slide must feel like part of one designed system`;
 
         try {
-          // Free Zen models can have independent capacity limits. Start with the requested
-          // Nemotron model, then fail over once rather than returning a transient 429 to users.
+          // Token Harbor free models use independent allocations. Prefer the most capable
+          // DeepSeek route and fall back to the other free models when capacity is exhausted.
           const models = [
-            'mimo-v2.5-free',
-            'nemotron-3.5-lightning-free',
-            'nemotron-3-ultra-free',
+            'deepseek-v4.1-flash:free',
+            'deepseek-v4-flash:free',
+            'mimo-v2.5:free',
           ];
           let apiRes;
           let lastError = '';
@@ -130,12 +133,11 @@ Rules:
           for (const model of models) {
             let response;
             try {
-              response = await fetch('https://opencode.ai/zen/v1/chat/completions', {
+              response = await fetch('https://tokenharbor.ai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${apiKey}`,
                   'Content-Type': 'application/json',
-                  'x-opencode-session': `portfolio-${Date.now()}`,
                 },
                 body: JSON.stringify({
                   model,
@@ -144,7 +146,7 @@ Rules:
                     { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
                   ],
                   temperature: 0.7,
-                  max_tokens: 16000,
+                  max_tokens: maxTokens,
                 }),
                 // A free model can occasionally accept but never finish a request.
                 // Move to the next provider quickly instead of leaving the editor stuck.
@@ -154,7 +156,7 @@ Rules:
               lastError = error.name === 'TimeoutError'
                 ? `${model} timed out`
                 : error.message;
-              console.warn(`Zen model ${model} request failed:`, lastError);
+              console.warn(`Token Harbor model ${model} request failed:`, lastError);
               continue;
             }
 
@@ -164,7 +166,7 @@ Rules:
             }
 
             lastError = await response.text();
-            console.warn(`Zen model ${model} returned ${response.status}:`, lastError);
+            console.warn(`Token Harbor model ${model} returned ${response.status}:`, lastError);
 
             // Non-capacity errors (invalid key, bad request, etc.) cannot be solved by
             // switching models, so return them immediately.
@@ -176,7 +178,7 @@ Rules:
           }
 
           if (!apiRes) {
-            console.error('All free Zen models are temporarily unavailable:', lastError);
+            console.error('All free Token Harbor models are temporarily unavailable:', lastError);
             res.writeHead(429, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Free AI models are busy. Please wait a minute and try again.' }));
             return;

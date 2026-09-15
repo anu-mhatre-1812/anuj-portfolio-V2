@@ -6,30 +6,36 @@ const CarouselRoom = memo(({ showRoom, onReady, isWarmup = false }) => {
     const { openOverlay, overlayContent } = useScene();
     const hasOpened = useRef(false);
     const hasSignaledReady = useRef(false);
+    const openOverlayRef = useRef(openOverlay);
+    const onReadyRef = useRef(onReady);
+    const overlayContentRef = useRef(overlayContent);
 
-    // Open the carousel editor overlay when room is entered
+    openOverlayRef.current = openOverlay;
+    onReadyRef.current = onReady;
+    overlayContentRef.current = overlayContent;
+
     useEffect(() => {
-        if (showRoom && !isWarmup && !hasOpened.current && !overlayContent) {
-            // Signal the door transition once, even if this room re-renders while entering.
+        if (showRoom && !isWarmup && !hasOpened.current) {
             if (!hasSignaledReady.current) {
                 hasSignaledReady.current = true;
-                onReady?.();
+                onReadyRef.current?.();
             }
 
-            // Do not mark this as opened until the timer fires. Room-entry state updates can
-            // re-render this component; the cleanup/retry then preserves the intended open.
             const timer = setTimeout(() => {
                 hasOpened.current = true;
-                openOverlay({
-                    layout: 'carousel_editor',
-                    title: 'CAROUSEL',
-                });
+
+                if (!overlayContentRef.current) {
+                    openOverlayRef.current({
+                        layout: 'carousel_editor',
+                        title: 'CAROUSEL',
+                    });
+                }
             }, 600);
+
             return () => clearTimeout(timer);
         }
-    }, [showRoom, isWarmup, onReady, openOverlay, overlayContent]);
+    }, [showRoom, isWarmup]);
 
-    // Reset when exiting
     useEffect(() => {
         if (!showRoom) {
             hasOpened.current = false;
@@ -39,7 +45,6 @@ const CarouselRoom = memo(({ showRoom, onReady, isWarmup = false }) => {
 
     return (
         <group>
-            {/* A small, tangible preview of the editor behind the full DOM workspace. */}
             <color attach="background" args={['#f3eee3']} />
             <ambientLight intensity={2.1} />
             <directionalLight position={[3, 6, 4]} intensity={1.7} color="#fff4dc" />
