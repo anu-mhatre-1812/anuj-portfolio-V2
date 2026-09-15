@@ -545,7 +545,7 @@ const FloatingToolbar = ({ element, onUpdate, onShapeChange, onDelete }) => {
     );
 
     return (
-        <div className="ce-floating-toolbar">
+        <div className="ce-floating-toolbar" onClick={(e) => e.stopPropagation()}>
             <div className="ce-float-group">
                 <input
                     type="number"
