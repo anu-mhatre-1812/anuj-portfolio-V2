@@ -632,11 +632,17 @@
 }
 
 // ─── Add Element Button ──────────────────────────────
-.ce-add-element-btn {
+.ce-add-btns {
   position: absolute;
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 5;
+}
+
+.ce-add-element-btn {
   padding: 0.5rem 1.2rem;
   background: #1a1a1a;
   color: #fafafa;
@@ -646,7 +652,6 @@
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  z-index: 5;
   transition: all 0.15s;
 
   &:hover {

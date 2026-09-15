@@ -72,6 +72,8 @@ const DEFAULT_ELEMENT = (overrides = {}) => ({
     width: 936,
     height: 'auto',
     text: 'New Text',
+    imageUrl: null,
+    imageAspect: 1,
     shape: 'none',
     shapeColor: '#CC3333',
     style: {
@@ -254,6 +256,78 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
     );
 });
 DraggableTextElement.displayName = 'DraggableTextElement';
+
+/* ─── Draggable Image Element ────────────────────────── */
+const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate, onPointerDown, onPointerMove, onPointerUp }) => {
+    const [isResizing, setIsResizing] = useState(false);
+    const startRef = useRef({});
+
+    const handleResizeStart = useCallback((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsResizing(true);
+        startRef.current = { startX: e.clientX, startY: e.clientY, startW: elem.width || 300, startH: (elem.width || 300) / (elem.imageAspect || 1) };
+        const onMove = (ev) => {
+            const dx = ev.clientX - startRef.current.startX;
+            const newW = Math.max(50, startRef.current.startW + dx);
+            const newH = newW / (elem.imageAspect || 1);
+            onUpdate({ width: newW, height: newH });
+        };
+        const onUp = () => {
+            setIsResizing(false);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    }, [elem.width, elem.imageAspect, onUpdate]);
+
+    return (
+        <div
+            className={`slide-element slide-element--image ${isSelected ? 'selected' : ''}`}
+            style={{
+                position: 'absolute',
+                left: `${elem.x}px`,
+                top: `${elem.y}px`,
+                width: `${elem.width || 300}px`,
+                height: `${(elem.width || 300) / (elem.imageAspect || 1)}px`,
+                cursor: 'move',
+                userSelect: 'none',
+            }}
+            onPointerDown={(e) => {
+                onPointerDown(e, elem.id);
+                onSelect?.();
+            }}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <img
+                src={elem.imageUrl}
+                alt=""
+                draggable={false}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
+            />
+            {isSelected && (
+                <div
+                    className="slide-resize-handle"
+                    onPointerDown={handleResizeStart}
+                    style={{
+                        position: 'absolute',
+                        right: -6,
+                        bottom: -6,
+                        width: 12,
+                        height: 12,
+                        background: '#cc3333',
+                        cursor: 'se-resize',
+                        borderRadius: 2,
+                    }}
+                />
+            )}
+        </div>
+    );
+});
+DraggableImageElement.displayName = 'DraggableImageElement';
 
 /* ─── SlideCanvas ────────────────────────────────────── */
 const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelectElement, onUpdateElement, onBrandingUpdate, showGrid }, ref) => {
@@ -522,6 +596,17 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                             onPointerUp={onPointerUp}
                         />
                     )}
+                    {elem.type === 'image' && (
+                        <DraggableImageElement
+                            elem={elem}
+                            isSelected={selectedElementId === elem.id}
+                            onSelect={() => onSelectElement?.(elem.id)}
+                            onUpdate={(updates) => updateElement(elem.id, updates)}
+                            onPointerDown={onPointerDown}
+                            onPointerMove={onPointerMove}
+                            onPointerUp={onPointerUp}
+                        />
+                    )}
                 </React.Fragment>
             ))}
 
@@ -779,6 +864,37 @@ const CarouselEditor = ({ onClose }) => {
         const elems = [...(activeSlide.elements || []), elem];
         updateActiveElements(elems);
         setSelectedElementId(elem.id);
+    }, [activeSlide, updateActiveElements]);
+
+    const addImageElement = useCallback((e) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeSlide) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const aspect = img.width / img.height;
+                const maxW = 400;
+                const w = Math.min(maxW, img.width);
+                const h = w / aspect;
+                const elem = DEFAULT_ELEMENT({
+                    type: 'image',
+                    imageUrl: ev.target.result,
+                    width: w,
+                    height: h,
+                    imageAspect: aspect,
+                    x: 72 + Math.random() * 200,
+                    y: 200 + (activeSlide.elements?.length || 0) * 80,
+                    text: '',
+                });
+                const elems = [...(activeSlide.elements || []), elem];
+                updateActiveElements(elems);
+                setSelectedElementId(elem.id);
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
     }, [activeSlide, updateActiveElements]);
 
     const updateElement = useCallback((elemId, updates) => {
@@ -1039,9 +1155,15 @@ const CarouselEditor = ({ onClose }) => {
                                     showGrid={showGrid}
                                 />
                             </div>
-                            <button className="ce-add-element-btn" onClick={addElement}>
-                                + Add Text
-                            </button>
+                            <div className="ce-add-btns">
+                                <button className="ce-add-element-btn" onClick={addElement}>
+                                    + Add Text
+                                </button>
+                                <label className="ce-add-element-btn ce-add-element-btn--image">
+                                    + Add Image
+                                    <input type="file" accept="image/*" onChange={addImageElement} style={{ display: 'none' }} />
+                                </label>
+                            </div>
                         </>
                     ) : activeSlide && isPreviewing ? (
                         <div className="ce-preview-container" ref={previewRef}>
