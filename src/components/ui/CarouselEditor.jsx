@@ -690,9 +690,11 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                     <img src={slide.imageUrl} alt="" className="slide-image" />
                 </div>
             )}
-            <div className="slide-content-wrapper">
-                {renderLayout()}
-            </div>
+            {(!slide.elements || slide.elements.length === 0) && (
+                <div className="slide-content-wrapper">
+                    {renderLayout()}
+                </div>
+            )}
 
             {/* Draggable / Editable Elements */}
             {(slide.elements || []).map((elem) => (
