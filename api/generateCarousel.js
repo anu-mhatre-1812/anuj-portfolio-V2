@@ -142,9 +142,13 @@ Rules:
             lastError = await response.text();
             console.warn(`${provider.name} ${model} returned ${response.status}:`, lastError);
 
-            if (response.status !== 429 && response.status !== 503) {
-                return res.status(response.status).json({ error: `AI API error: ${response.status}` });
+            // Skip to next model/provider on capacity or endpoint errors
+            if (response.status === 429 || response.status === 503 || response.status === 404) {
+                continue;
             }
+
+            // Fatal error (bad key, etc.) — return immediately
+            return res.status(response.status).json({ error: `AI API error: ${response.status}` });
         }
 
         if (apiRes) break;
