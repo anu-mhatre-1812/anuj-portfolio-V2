@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
 
     const slideCount = Math.min(50, Math.max(2, parseInt(reqCount, 10) || 5));
-    const maxTokens = Math.min(9000, Math.max(1400, slideCount * 175));
+    const maxTokens = Math.min(16000, Math.max(4096, slideCount * 500));
 
     const userMessage = `You are a carousel content creator. Return ONLY a valid JSON object — no markdown, no code fences, no explanation. Just raw JSON.
 
