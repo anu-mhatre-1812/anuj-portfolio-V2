@@ -1439,7 +1439,13 @@ const CarouselEditor = ({ onClose }) => {
 
                             <div className="ce-field">
                                 <label className="ce-label">Layout</label>
-                                <select className="ce-select" value={activeSlide.layout} onChange={(e) => updateSlide(activeIndex, { layout: e.target.value })}>
+                                <select className="ce-select" value={activeSlide.layout} onChange={(e) => {
+                                    const newLayout = e.target.value;
+                                    const repositioned = activeSlide.elements?.length > 0
+                                        ? convertSlideToElements({ ...activeSlide, layout: newLayout })
+                                        : activeSlide.elements || [];
+                                    updateSlide(activeIndex, { layout: newLayout, elements: repositioned });
+                                }}>
                                     {LAYOUT_OPTIONS.map(l => <option key={l.id} value={l.id}>{l.label}</option>)}
                                 </select>
                             </div>
