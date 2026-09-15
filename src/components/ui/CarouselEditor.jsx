@@ -52,6 +52,21 @@ const SHAPE_OPTIONS = [
     { id: 'circle', label: 'Circle' },
 ];
 
+const SLIDE_STYLE_PRESETS = [
+    { id: 'neo-brutal', label: 'Neo Brutal', emoji: '\u{1F4A5}', bg: '#FFFFFF', text: '#1A1A1A', accent: '#CC3333', font: "'Cabin Sketch', cursive", titleSize: 72, contentSize: 28 },
+    { id: 'dark-mode', label: 'Dark Mode', emoji: '\u{1F319}', bg: '#0D0D0D', text: '#F5F5F5', accent: '#00E5FF', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
+    { id: 'cyber-punk', label: 'Cyber Punk', emoji: '\u{1F4F0}', bg: '#1A0033', text: '#FF2E97', accent: '#00E5FF', font: "'Space Mono', monospace", titleSize: 64, contentSize: 26 },
+    { id: 'minimal-white', label: 'Minimal White', emoji: '\u{26AA}', bg: '#FAFAFA', text: '#222222', accent: '#CC3333', font: "'Inter', sans-serif", titleSize: 52, contentSize: 24 },
+    { id: 'ocean-blue', label: 'Ocean Blue', emoji: '\u{1F30A}', bg: '#0A192F', text: '#CCD6F6', accent: '#64FFDA', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
+    { id: 'sunset', label: 'Sunset', emoji: '\u{1F305}', bg: '#FF6B35', text: '#FFFFFF', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 64, contentSize: 26 },
+    { id: 'forest', label: 'Forest', emoji: '\u{1F33F}', bg: '#1B2D1B', text: '#A8D5BA', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 56, contentSize: 24 },
+    { id: 'royal-purple', label: 'Royal Purple', emoji: '\u{1F451}', bg: '#2D0A3E', text: '#E8C1F7', accent: '#FFD700', font: "'Space Mono', monospace", titleSize: 60, contentSize: 24 },
+    { id: 'paper', label: 'Paper', emoji: '\u{1F4DD}', bg: '#F5F0E8', text: '#3D3229', accent: '#CC3333', font: "'Caveat', cursive", titleSize: 52, contentSize: 26 },
+    { id: 'neon-glow', label: 'Neon Glow', emoji: '\u{1F4A1}', bg: '#0A0A0A', text: '#39FF14', accent: '#FF073A', font: "'Space Mono', monospace", titleSize: 60, contentSize: 24 },
+    { id: 'candy', label: 'Candy', emoji: '\u{1F36C}', bg: '#FF69B4', text: '#FFFFFF', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 64, contentSize: 26 },
+    { id: 'carbon', label: 'Carbon', emoji: '\u{267B}\u{FE0F}', bg: '#1C1C1C', text: '#E0E0E0', accent: '#FF4444', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
+];
+
 const DEFAULT_BRANDING = () => ({
     text: '@anujmhatre',
     logoUrl: null,
@@ -1516,6 +1531,30 @@ const CarouselEditor = ({ onClose }) => {
                                 <select className="ce-select" value={activeSlide.fontFamily} onChange={(e) => updateSlide(activeIndex, { fontFamily: e.target.value })}>
                                     {FONT_OPTIONS.map(f => <option key={f.label} value={f.value}>{f.label}</option>)}
                                 </select>
+                            </div>
+
+                            {/* ─── Slide Style Presets ───────────────── */}
+                            <div className="ce-divider" />
+                            <div className="ce-field">
+                                <label className="ce-label">Slide Style</label>
+                                <div className="ce-style-grid">
+                                    {SLIDE_STYLE_PRESETS.map(preset => (
+                                        <button key={preset.id} className="ce-style-chip" title={preset.label} onClick={() => {
+                                            updateSlide(activeIndex, {
+                                                bgColor: preset.bg,
+                                                textColor: preset.text,
+                                                fontFamily: preset.font,
+                                                titleFontSize: preset.titleSize,
+                                                contentFontSize: preset.contentSize,
+                                            });
+                                        }}>
+                                            <span className="ce-style-swatch" style={{ background: preset.bg, border: `2px solid ${preset.accent}` }}>
+                                                <span className="ce-style-letter" style={{ color: preset.text, fontFamily: preset.font }}>A</span>
+                                            </span>
+                                            <span className="ce-style-name">{preset.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             {/* ─── Branding Section ───────────────── */}
