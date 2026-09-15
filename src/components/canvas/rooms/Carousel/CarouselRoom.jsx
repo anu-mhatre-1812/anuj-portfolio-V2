@@ -3,7 +3,7 @@ import { Float, RoundedBox, Text } from '@react-three/drei';
 import { useScene } from '../../../../context/SceneContext';
 
 const CarouselRoom = memo(({ showRoom, onReady, isWarmup = false }) => {
-    const { openOverlay, overlayContent } = useScene();
+    const { openOverlay, overlayContent, currentRoom } = useScene();
     const hasOpened = useRef(false);
     const hasSignaledReady = useRef(false);
     const openOverlayRef = useRef(openOverlay);
@@ -14,27 +14,32 @@ const CarouselRoom = memo(({ showRoom, onReady, isWarmup = false }) => {
     onReadyRef.current = onReady;
     overlayContentRef.current = overlayContent;
 
+    // Signal ready when showRoom becomes true (triggers door open in DoorSection)
     useEffect(() => {
-        if (showRoom && !isWarmup && !hasOpened.current) {
-            if (!hasSignaledReady.current) {
-                hasSignaledReady.current = true;
-                onReadyRef.current?.();
-            }
+        if (showRoom && !isWarmup && !hasSignaledReady.current) {
+            hasSignaledReady.current = true;
+            onReadyRef.current?.();
+        }
+    }, [showRoom, isWarmup]);
 
+    // Open overlay AFTER enterRoom sets currentRoom to 'carousel'
+    // This avoids the bug where enterRoom(doorId) clears overlayContent
+    // before the old timer-based approach could keep it open.
+    useEffect(() => {
+        if (currentRoom === 'carousel' && showRoom && !hasOpened.current) {
+            hasOpened.current = true;
+            // Small delay to ensure enterRoom's setOverlayContent(null) has settled
             const timer = setTimeout(() => {
-                hasOpened.current = true;
-
                 if (!overlayContentRef.current) {
                     openOverlayRef.current({
                         layout: 'carousel_editor',
                         title: 'CAROUSEL',
                     });
                 }
-            }, 600);
-
+            }, 100);
             return () => clearTimeout(timer);
         }
-    }, [showRoom, isWarmup]);
+    }, [currentRoom, showRoom]);
 
     useEffect(() => {
         if (!showRoom) {
