@@ -386,11 +386,11 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             case 'bullet-list':
                 return (
                     <div className="slide-layout-bullets">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Slide Title'}
                         </h1>
-                        <p className="slide-content">{slide.content || 'Add your content here...'}</p>
-                        <ul className="slide-bullets">
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || 'Add your content here...'}</p>
+                        <ul className="slide-bullets" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                             {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                 <li key={i} className="slide-bullet-item">{b}</li>
                             ))}
@@ -400,11 +400,11 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             case 'numbered-list':
                 return (
                     <div className="slide-layout-numbered">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Slide Title'}
                         </h1>
-                        <p className="slide-content">{slide.content || 'Add your content here...'}</p>
-                        <ol className="slide-numbered-list">
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || 'Add your content here...'}</p>
+                        <ol className="slide-numbered-list" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                             {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                 <li key={i} className="slide-numbered-item">{b}</li>
                             ))}
@@ -414,22 +414,22 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             case 'big-text':
                 return (
                     <div className="slide-layout-bigtext">
-                        <h1 className="slide-title slide-title--large" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title slide-title--large" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Big Statement'}
                         </h1>
-                        <p className="slide-content">{slide.content || ''}</p>
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || ''}</p>
                     </div>
                 );
             case 'split':
                 return (
                     <div className="slide-layout-split">
                         <div className="slide-split-left">
-                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                                 {slide.title || 'Slide Title'}
                             </h1>
                         </div>
                         <div className="slide-split-right">
-                            <p className="slide-content">{slide.content || 'Add your content here...'}</p>
+                            <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || 'Add your content here...'}</p>
                         </div>
                     </div>
                 );
@@ -437,24 +437,24 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                 return (
                     <div className="slide-layout-quote">
                         <div className="slide-quote-mark">"</div>
-                        <h1 className="slide-title slide-title--quote" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title slide-title--quote" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Quote goes here'}
                         </h1>
-                        <p className="slide-content">{slide.content || ''}</p>
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || ''}</p>
                     </div>
                 );
             case 'two-column':
                 return (
                     <div className="slide-layout-twocol">
                         <div className="slide-twocol-left">
-                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                                 {slide.title || 'Left Column'}
                             </h1>
-                            <p className="slide-content">{slide.content || 'Content goes here...'}</p>
+                            <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || 'Content goes here...'}</p>
                         </div>
                         <div className="slide-twocol-divider" />
                         <div className="slide-twocol-right">
-                            <ul className="slide-bullets">
+                            <ul className="slide-bullets" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                                 {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                     <li key={i} className="slide-bullet-item">{b}</li>
                                 ))}
@@ -468,10 +468,10 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             case 'stats':
                 return (
                     <div className="slide-layout-stats">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Key Stats'}
                         </h1>
-                        <div className="slide-stats-grid">
+                        <div className="slide-stats-grid" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                             {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                 <div key={i} className="slide-stat-card">
                                     <span className="slide-stat-number">{String(i + 1).padStart(2, '0')}</span>
@@ -485,17 +485,17 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                                 </>
                             )}
                         </div>
-                        <p className="slide-content" style={{ marginTop: '32px' }}>{slide.content || ''}</p>
+                        <p className="slide-content" style={{ marginTop: '32px', opacity: slide.contentOpacity ?? 1 }}>{slide.content || ''}</p>
                     </div>
                 );
             case 'checklist':
                 return (
                     <div className="slide-layout-checklist">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Checklist'}
                         </h1>
-                        <p className="slide-content">{slide.content || ''}</p>
-                        <ul className="slide-checklist">
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || ''}</p>
+                        <ul className="slide-checklist" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                             {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                 <li key={i} className="slide-checklist-item">
                                     <span className="slide-checklist-box">✓</span>
@@ -511,10 +511,10 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             case 'timeline':
                 return (
                     <div className="slide-layout-timeline">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Timeline'}
                         </h1>
-                        <div className="slide-timeline">
+                        <div className="slide-timeline" style={{ opacity: slide.bulletsOpacity ?? 1 }}>
                             {(slide.bullets || []).filter(Boolean).map((b, i) => (
                                 <div key={i} className="slide-timeline-item">
                                     <div className="slide-timeline-dot" />
@@ -537,10 +537,10 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                 return (
                     <div className="slide-layout-testimonial">
                         <div className="slide-testimonial-quote">"</div>
-                        <h1 className="slide-title slide-title--testimonial" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title slide-title--testimonial" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || ' testimonial goes here'}
                         </h1>
-                        <div className="slide-testimonial-author">
+                        <div className="slide-testimonial-author" style={{ opacity: slide.contentOpacity ?? 1 }}>
                             <div className="slide-testimonial-avatar">{(slide.content || 'A')[0].toUpperCase()}</div>
                             <div className="slide-testimonial-info">
                                 <span className="slide-testimonial-name">{slide.content || 'Author Name'}</span>
@@ -558,10 +558,10 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                             <div className="slide-imgoverlay-placeholder">Upload image in editor</div>
                         )}
                         <div className="slide-imgoverlay-content">
-                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                                 {slide.title || 'Image Title'}
                             </h1>
-                            <p className="slide-content">{slide.content || ''}</p>
+                            <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || ''}</p>
                         </div>
                     </div>
                 );
@@ -569,11 +569,11 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             default:
                 return (
                     <div className="slide-layout-hook">
-                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight, opacity: slide.titleOpacity ?? 1 }}>
                             {slide.title || 'Slide Title'}
                         </h1>
                         <div className="slide-divider" />
-                        <p className="slide-content">{slide.content || 'Add your content here...'}</p>
+                        <p className="slide-content" style={{ opacity: slide.contentOpacity ?? 1 }}>{slide.content || 'Add your content here...'}</p>
                         <div className="slide-cta">→</div>
                     </div>
                 );
@@ -1321,13 +1321,21 @@ const CarouselEditor = ({ onClose }) => {
                                 <label className="ce-label">Title</label>
                                 <input className="ce-input" type="text" value={activeSlide.title} onChange={(e) => updateSlide(activeIndex, { title: e.target.value })} placeholder="Slide title" />
                             </div>
+                            <div className="ce-field">
+                                <label className="ce-label">Title Opacity</label>
+                                <input type="range" min="0.1" max="1" step="0.05" value={activeSlide.titleOpacity ?? 1} onChange={(e) => updateSlide(activeIndex, { titleOpacity: parseFloat(e.target.value) })} style={{ width: '100%' }} />
+                            </div>
 
                             <div className="ce-field">
                                 <label className="ce-label">Content</label>
                                 <textarea className="ce-textarea" value={activeSlide.content} onChange={(e) => updateSlide(activeIndex, { content: e.target.value })} placeholder="Slide content" rows={3} />
                             </div>
+                            <div className="ce-field">
+                                <label className="ce-label">Content Opacity</label>
+                                <input type="range" min="0.1" max="1" step="0.05" value={activeSlide.contentOpacity ?? 1} onChange={(e) => updateSlide(activeIndex, { contentOpacity: parseFloat(e.target.value) })} style={{ width: '100%' }} />
+                            </div>
 
-                            {(activeSlide.layout === 'bullet-list' || activeSlide.layout === 'numbered-list') && (
+                            {(activeSlide.layout === 'bullet-list' || activeSlide.layout === 'numbered-list' || activeSlide.layout === 'checklist' || activeSlide.layout === 'timeline') && (
                                 <div className="ce-field">
                                     <label className="ce-label">Points</label>
                                     {(activeSlide.bullets || []).map((b, i) => (
@@ -1337,6 +1345,12 @@ const CarouselEditor = ({ onClose }) => {
                                         </div>
                                     ))}
                                     <button className="ce-btn ce-btn--ghost ce-btn--small" onClick={() => updateSlide(activeIndex, { bullets: [...(activeSlide.bullets || []), ''] })}>+ Add Point</button>
+                                </div>
+                            )}
+                            {(activeSlide.bullets || []).length > 0 && (
+                                <div className="ce-field">
+                                    <label className="ce-label">Points Opacity</label>
+                                    <input type="range" min="0.1" max="1" step="0.05" value={activeSlide.bulletsOpacity ?? 1} onChange={(e) => updateSlide(activeIndex, { bulletsOpacity: parseFloat(e.target.value) })} style={{ width: '100%' }} />
                                 </div>
                             )}
 
