@@ -120,9 +120,9 @@ Rules:
           // Free Zen models can have independent capacity limits. Start with the requested
           // Nemotron model, then fail over once rather than returning a transient 429 to users.
           const models = [
+            'mimo-v2.5-free',
             'nemotron-3.5-lightning-free',
             'nemotron-3-ultra-free',
-            'mimo-v2.5-free',
           ];
           let apiRes;
           let lastError = '';
