@@ -92,7 +92,16 @@ Rules:
             timeout: 10000,
             headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://anujmhatre.me', 'X-Title': 'Anuj Portfolio' }),
         },
-        // 4. OpenCode Zen (last resort)
+        // 4. Google Gemini
+        {
+            name: 'Gemini',
+            url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+            key: process.env.GEMINI_API_KEY,
+            models: ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'],
+            timeout: 12000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
+        },
+        // 5. OpenCode Zen (last resort)
         {
             name: 'OpenCode Zen',
             url: 'https://opencode.ai/zen/v1/chat/completions',
