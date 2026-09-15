@@ -15,7 +15,7 @@ const ROOMS = [
     { id: 'gallery', label: 'Gallery', x: 43, y: 72 },  // City buildings (bottom left)
     { id: 'contact', label: 'Contact', x: 57, y: 25 },  // Pier/dock (top right)
     { id: 'studio', label: 'Studio', x: 57, y: 55 },    // Monitors stack (right side)
-    { id: 'carousel', label: 'Carousel', x: 50, y: 50 }, // Center (carousel creator)
+    { id: 'carousel', label: 'Carousel', x: 43, y: 25 },
 ];
 
 // Pin starting position - the dashed circle at the bottom of the tower
@@ -340,6 +340,34 @@ const NavigationUI = () => {
                             <img ref={paintedMapsRefs.contact} src="/images/map_contact_painted.webp" alt="" className="painted-map-layer" style={{ clipPath: 'polygon(95% 10%, 95% 10%, 95% 35%, 95% 35%)' }} />
                             <img ref={paintedMapsRefs.studio} src="/images/map_studio_painted.webp" alt="" className="painted-map-layer" style={{ clipPath: 'polygon(85% 41%, 85% 41%, 85% 81%, 85% 81%)' }} />
 
+                            {/* Carousel route branch */}
+                            <svg className="map-carousel-route" viewBox="0 0 100 100" aria-hidden="true">
+                                <path d="M50 25 L43 25 L28 25" />
+                                <rect x="40.4" y="21.8" width="5.2" height="6.4" rx="0.35" />
+                                <path
+                                    d="M43 22.4 L43 27.6 M40.9 25 L45.1 25"
+                                    className="map-carousel-route__detail"
+                                />
+                            </svg>
+
+                            {/* Carousel landmark illustration */}
+                            <svg className="map-carousel-landmark" viewBox="0 0 100 100" aria-hidden="true">
+                                <g transform="translate(17 17) scale(0.72) rotate(-7)">
+                                    <rect x="0" y="2.5" width="8.2" height="10.2" rx="0.55" />
+                                    <rect x="3.1" y="0" width="8.2" height="10.2" rx="0.55" />
+                                    <rect x="6.2" y="2.5" width="8.2" height="10.2" rx="0.55" />
+                                    <path d="M4.2 3.1 H10.2 M4.2 5.3 H8.8 M7.2 8.2 H12.5" />
+                                    <path
+                                        d="M0.8 14.7 C4.7 17.1 10.8 17.1 14.8 14.7"
+                                        className="map-carousel-landmark__swipe"
+                                    />
+                                    <path
+                                        d="M13.3 13.7 L14.8 14.7 L13.2 15.5"
+                                        className="map-carousel-landmark__swipe"
+                                    />
+                                </g>
+                            </svg>
+
                             {/* Hover Zones — 4 quadrants covering the map */}
                             <button
                                 type="button"
@@ -397,7 +425,7 @@ const NavigationUI = () => {
                             <div className="map-room-label gallery">THE<br />GALLERY</div>
                             <div className="map-room-label contact">CONTACT</div>
                             <div className="map-room-label studio">THE<br />STUDIO</div>
-                            <div className="map-room-label carousel">CAROUSEL</div>
+                            <div className="map-room-label carousel">CAROUSEL<br />LAB</div>
 
                             {/* Pin slot markers - 4 locations */}
                             {ROOMS.map((room) => (

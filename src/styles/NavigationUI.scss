@@ -363,11 +363,11 @@
     }
 
     .zone-carousel {
-        top: 50%;
-        left: 50%;
-        width: 20%;
-        height: 15%;
-        transform: translate(-50%, -50%);
+        top: 18%;
+        left: 35%;
+        width: 16%;
+        height: 14%;
+        transform: none;
         //background: rgba(0, 100, 255, 0.25); // DEBUG blue
     }
 
@@ -411,8 +411,10 @@
         }
 
         &.carousel {
-            top: 50%;
-            left: 50%;
+            top: 14%;
+            left: 22%;
+            font-size: 0.9rem;
+            line-height: 1;
         }
     }
 
@@ -426,7 +428,7 @@
         border: none;
         cursor: pointer;
         transition: transform 0.2s ease;
-        z-index: 2;
+        z-index: 5;
 
         .slot-image {
             width: 100%;
@@ -456,6 +458,61 @@
             width: 100%;
             height: auto;
             filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+    }
+
+    .map-carousel-route {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        pointer-events: none;
+        overflow: visible;
+
+        path,
+        rect {
+            fill: #fffdf8;
+            stroke: #1a1a1a;
+            stroke-width: 0.45;
+            vector-effect: non-scaling-stroke;
+        }
+
+        path:first-child {
+            fill: none;
+        }
+
+        .map-carousel-route__detail {
+            fill: none;
+            stroke-width: 0.28;
+        }
+    }
+
+    .map-carousel-landmark {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        pointer-events: none;
+        overflow: visible;
+
+        rect,
+        path {
+            fill: #fffdf8;
+            stroke: #1a1a1a;
+            stroke-width: 0.42;
+            vector-effect: non-scaling-stroke;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        path {
+            fill: none;
+        }
+
+        .map-carousel-landmark__swipe {
+            stroke-width: 0.32;
         }
     }
 }
