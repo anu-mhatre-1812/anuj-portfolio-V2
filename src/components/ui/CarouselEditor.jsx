@@ -105,35 +105,70 @@ const DEFAULT_SLIDE = () => ({
     elements: [],
 });
 
-const SAMPLE_SLIDES = [
-    {
-        id: 1, title: '5 Ways to Boost Your Creativity', content: 'Small habits that make a big difference in your daily creative workflow.',
-        layout: 'hook-content-cta', bgColor: '#FAFAFA', textColor: '#1A1A1A', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null, bullets: [],
-        branding: DEFAULT_BRANDING(), elements: [],
+const SAMPLE_STYLES = {
+    neoBrutalism: {
+        label: 'Neo Brutalism',
+        slides: [
+            { id: 1, title: 'BREAK THE GRID', content: 'Design rules exist to be shattered. Neo brutalism is raw, loud, and unapologetic.', layout: 'hook-content-cta', bgColor: '#FFFF00', textColor: '#000000', fontFamily: "'Rubik Scribble', cursive", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FF3333' },
+            { id: 2, title: 'THICK BORDERS', content: 'Every element gets a 4px black border. No subtlety. No softness. Pure visual impact.', layout: 'bullet-list', bgColor: '#FF6B6B', textColor: '#000000', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null, bullets: ['Hard shadows', 'Clashing colors', 'Intentional "ugly"'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#000' },
+            { id: 3, title: 'RAW > POLISHED', content: 'Perfection is boring. The best designs feel human, rough, and alive.', layout: 'big-text', bgColor: '#000000', textColor: '#FFFF00', fontFamily: "'Rubik Scribble', cursive", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FF3333' },
+            { id: 4, title: 'COLOR CHAOS', content: 'Pair colors that "shouldn\'t" work together. Yellow + pink + lime green = chef\'s kiss.', layout: 'two-column', bgColor: '#FF00FF', textColor: '#FFFFFF', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null, bullets: ['Bold typefaces', 'Asymmetric layouts', 'Maximum contrast'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FFFF00' },
+            { id: 5, title: 'GO LOUD OR GO HOME', content: 'Follow @anujmhatre for more design chaos.', layout: 'hook-content-cta', bgColor: '#00FF00', textColor: '#000000', fontFamily: "'Rubik Scribble', cursive", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FF00FF' },
+        ],
     },
-    {
-        id: 2, title: 'Start With Morning Pages', content: 'Write 3 pages every morning. No rules, no judgment. Just dump your thoughts onto paper.',
-        layout: 'bullet-list', bgColor: '#F5F0E6', textColor: '#1A1A1A', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null,
-        bullets: ['Clears mental clutter', 'Sparks new ideas', 'Takes only 20 minutes'],
-        branding: DEFAULT_BRANDING(), elements: [],
+    minimalism: {
+        label: 'Minimalism',
+        slides: [
+            { id: 1, title: 'Less Is More', content: 'The art of subtraction. Remove everything until only the essential remains.', layout: 'hook-content-cta', bgColor: '#FAFAFA', textColor: '#1A1A1A', fontFamily: "'Inter', sans-serif", fontWeight: 300, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#CCC' },
+            { id: 2, title: 'White Space Is Not Empty', content: 'It\'s a design element. Let your content breathe.', layout: 'big-text', bgColor: '#FFFFFF', textColor: '#1A1A1A', fontFamily: "'Inter', sans-serif", fontWeight: 300, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#EEE' },
+            { id: 3, title: 'One Font. One Color.', content: 'Typography-led design needs no decoration. The type IS the design.', layout: 'bullet-list', bgColor: '#F5F5F5', textColor: '#333333', fontFamily: "'Inter', sans-serif", fontWeight: 400, imageUrl: null, bullets: ['Hierarchy through size', 'Weight for emphasis', 'Spacing for rhythm'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#DDD' },
+            { id: 4, title: 'Intentional Restraint', content: 'Every pixel must earn its place. If it doesn\'t serve the message, delete it.', layout: 'split', bgColor: '#FAFAFA', textColor: '#1A1A1A', fontFamily: "'Inter', sans-serif", fontWeight: 300, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#EEE' },
+            { id: 5, title: 'Simplicity Sells', content: 'Follow @anujmhatre for clean design thinking.', layout: 'hook-content-cta', bgColor: '#FFFFFF', textColor: '#1A1A1A', fontFamily: "'Inter', sans-serif", fontWeight: 300, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#CCC' },
+        ],
     },
-    {
-        id: 3, title: 'Take Walks Without Your Phone', content: 'Boredom is the birthplace of creativity. Let your mind wander.',
-        layout: 'big-text', bgColor: '#E8E2D5', textColor: '#1A1A1A', fontFamily: "'Rubik Scribble', cursive", fontWeight: 400, imageUrl: null, bullets: [],
-        branding: DEFAULT_BRANDING(), elements: [],
+    glassmorphism: {
+        label: 'Glassmorphism',
+        slides: [
+            { id: 1, title: 'Frosted Future', content: 'Glass UI is everywhere — from Apple to Vercel. Here\'s why it works.', layout: 'hook-content-cta', bgColor: '#0A0A2E', textColor: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 400, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'rounded', shapeColor: 'rgba(255,255,255,0.1)' },
+            { id: 2, title: 'Blur + Transparency', content: 'Background blur creates depth without heaviness. It feels modern, light, and premium.', layout: 'bullet-list', bgColor: '#1A1A4E', textColor: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 400, imageUrl: null, bullets: ['backdrop-filter: blur(20px)', 'Subtle border (1px white 20%)', 'Layered depth'], branding: DEFAULT_BRANDING(), elements: [], shape: 'rounded', shapeColor: 'rgba(255,255,255,0.08)' },
+            { id: 3, title: 'Depth Through Layers', content: 'Stack glass panels to create Z-depth. Each layer adds hierarchy.', layout: 'two-column', bgColor: '#0A0A2E', textColor: '#E0E0FF', fontFamily: "'Caveat', cursive", fontWeight: 400, imageUrl: null, bullets: ['Base layer: gradient bg', 'Mid layer: glass cards', 'Top layer: content'], branding: DEFAULT_BRANDING(), elements: [], shape: 'rounded', shapeColor: 'rgba(255,255,255,0.05)' },
+            { id: 4, title: 'Gradient Magic', content: 'Combine glass with vibrant gradients. Purple → blue → teal = chef\'s kiss.', layout: 'big-text', bgColor: '#1A0A3E', textColor: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 300, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'pill', shapeColor: 'rgba(100,100,255,0.15)' },
+            { id: 5, title: 'Try It Now', content: 'Follow @anujmhatre for more glass UI tutorials.', layout: 'hook-content-cta', bgColor: '#0A0A2E', textColor: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 400, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'rounded', shapeColor: 'rgba(255,255,255,0.1)' },
+        ],
     },
-    {
-        id: 4, title: 'Try the 2-Minute Rule', content: 'If a creative idea takes less than 2 minutes, do it now. Don\'t overthink.',
-        layout: 'numbered-list', bgColor: '#FAFAFA', textColor: '#1A1A1A', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null,
-        bullets: ['Sketch it', 'Write it down', 'Record a voice note'],
-        branding: DEFAULT_BRANDING(), elements: [],
+    maximalism: {
+        label: 'Maximalism',
+        slides: [
+            { id: 1, title: 'MORE IS MORE', content: 'Why settle for less? Maximalism celebrates excess, texture, and visual noise.', layout: 'hook-content-cta', bgColor: '#FF1493', textColor: '#FFFF00', fontFamily: "'Gloria Hallelujah', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'circle', shapeColor: '#00FF00' },
+            { id: 2, title: 'LAYER EVERYTHING', content: 'Text on images on patterns on gradients. There is no "too much."', layout: 'bullet-list', bgColor: '#FFD700', textColor: '#FF0000', fontFamily: "'Rubik Scribble', cursive", fontWeight: 900, imageUrl: null, bullets: ['Mix 5+ fonts', 'Clash patterns', 'Overlap elements', 'Use ALL the colors'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FF00FF' },
+            { id: 3, title: 'TEXTURE OVERLOAD', content: 'Noise, grain, paper, fabric, metal —堆 everything together. The chaos IS the aesthetic.', layout: 'big-text', bgColor: '#00CED1', textColor: '#FF1493', fontFamily: "'Cabin Sketch', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FFD700' },
+            { id: 4, title: 'RULES? NEVER HEARD OF THEM', content: 'Grid? Nope. Hierarchy? Whatever. Make it loud, make it yours.', layout: 'split', bgColor: '#9400D3', textColor: '#00FF7F', fontFamily: "'Gloria Hallelujah', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FF1493' },
+            { id: 5, title: 'GO CRAZY', content: 'Follow @anujmhatre for more visual chaos.', layout: 'hook-content-cta', bgColor: '#FF4500', textColor: '#FFFF00', fontFamily: "'Rubik Scribble', cursive", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'circle', shapeColor: '#FF00FF' },
+        ],
     },
-    {
-        id: 5, title: 'Save This For Later', content: 'Follow @anujmhatre for more creative tips and engineering insights.',
-        layout: 'hook-content-cta', bgColor: '#0A0A0A', textColor: '#FAFAFA', fontFamily: "'Rubik Scribble', cursive", fontWeight: 400, imageUrl: null, bullets: [],
-        branding: DEFAULT_BRANDING(), elements: [],
+    brutalism: {
+        label: 'Brutalism',
+        slides: [
+            { id: 1, title: 'DESIGN IS DEAD', content: 'Long live raw, unfiltered expression. Brutalism strips away the fake.', layout: 'hook-content-cta', bgColor: '#F5F5F5', textColor: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#000' },
+            { id: 2, title: 'NO DECORATION', content: 'No rounded corners. No gradients. No drop shadows. Just structure and content.', layout: 'bullet-list', bgColor: '#FFFFFF', textColor: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 900, imageUrl: null, bullets: ['Raw HTML aesthetic', 'Monospace fonts', 'System fonts welcome'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#000' },
+            { id: 3, title: 'FUNCTION OVER FORM', content: 'If it works, it\'s beautiful. Beauty is a side effect, not the goal.', layout: 'numbered-list', bgColor: '#E0E0E0', textColor: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 700, imageUrl: null, bullets: ['Content first', 'Structure second', 'Style never'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#000' },
+            { id: 4, title: 'THE UGLY TRUTH', content: 'Most "beautiful" design is just hiding boring ideas behind pretty surfaces.', layout: 'quote', bgColor: '#000000', textColor: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#FFF' },
+            { id: 5, title: 'EMBRACE THE RAW', content: 'Follow @anujmhatre for anti-design thinking.', layout: 'hook-content-cta', bgColor: '#F5F5F5', textColor: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 900, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#000' },
+        ],
     },
-];
+    skeuomorphism: {
+        label: 'Skeuomorphism',
+        slides: [
+            { id: 1, title: 'Real World Vibes', content: 'Leather, wood, paper, metal — design that mimics real materials is making a comeback.', layout: 'hook-content-cta', bgColor: '#8B4513', textColor: '#FAFAFA', fontFamily: "'Caveat', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#D2691E' },
+            { id: 2, title: 'Textures Matter', content: 'Grain, fiber, imperfections — these make digital feel physical and trustworthy.', layout: 'bullet-list', bgColor: '#DEB887', textColor: '#3E2723', fontFamily: "'Caveat', cursive", fontWeight: 700, imageUrl: null, bullets: ['Paper texture backgrounds', 'Embossed buttons', 'Realistic shadows'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#8B4513' },
+            { id: 3, title: 'DEPTH IS REAL', content: 'Multiple shadow layers create the illusion of physical objects on screen.', layout: 'big-text', bgColor: '#D2691E', textColor: '#FFF8DC', fontFamily: "'Gloria Hallelujah', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#8B4513' },
+            { id: 4, title: 'WHY IT WORKS', content: 'Familiar materials reduce cognitive load. Users already know how leather and paper "feel."', layout: 'two-column', bgColor: '#FAF0E6', textColor: '#3E2723', fontFamily: "'Caveat', cursive", fontWeight: 700, imageUrl: null, bullets: ['Trust through familiarity', 'Emotional connection', 'Nostalgia factor'], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#DEB887' },
+            { id: 5, title: 'GO TACTILE', content: 'Follow @anujmhatre for material design deep dives.', layout: 'hook-content-cta', bgColor: '#8B4513', textColor: '#FAFAFA', fontFamily: "'Caveat', cursive", fontWeight: 700, imageUrl: null, bullets: [], branding: DEFAULT_BRANDING(), elements: [], shape: 'none', shapeColor: '#D2691E' },
+        ],
+    },
+};
+
+const SAMPLE_SLIDES = SAMPLE_STYLES.neoBrutalism.slides;
 
 /* ─── Drag Element Hook ──────────────────────────────── */
 function useDragElement(canvasScale, updateElement) {
@@ -818,6 +853,9 @@ const CarouselEditor = ({ onClose }) => {
     const [prompt, setPrompt] = useState('');
     const [slideCount, setSlideCount] = useState(5);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [mcqQuestions, setMcqQuestions] = useState(null);
+    const [mcqAnswers, setMcqAnswers] = useState({});
+    const [isAskingQuestions, setIsAskingQuestions] = useState(false);
     const [generateError, setGenerateError] = useState(null);
     const [dragIndex, setDragIndex] = useState(null);
     const [selectedElementId, setSelectedElementId] = useState(null);
@@ -952,18 +990,55 @@ const CarouselEditor = ({ onClose }) => {
 
     const handleGenerate = useCallback(async () => {
         if (!prompt.trim()) return;
-        setIsGenerating(true);
+
+        // If we have MCQ answers, generate with answers
+        if (mcqQuestions && Object.keys(mcqAnswers).length > 0) {
+            setIsGenerating(true);
+            setGenerateError(null);
+            try {
+                const generated = await generateCarousel(prompt, slideCount, mcqAnswers);
+                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: s.elements || [] })));
+                setActiveIndex(0);
+                setMcqQuestions(null);
+                setMcqAnswers({});
+            } catch (err) {
+                setGenerateError(err.message || 'Generation failed. Try again.');
+            } finally {
+                setIsGenerating(false);
+            }
+            return;
+        }
+
+        // First: ask MCQ questions
+        setIsAskingQuestions(true);
         setGenerateError(null);
         try {
-            const generated = await generateCarousel(prompt, slideCount);
-            setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: s.elements || [] })));
-            setActiveIndex(0);
+            const response = await fetch('/api/generateCarousel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, slideCount, mode: 'questions' }),
+            });
+            if (!response.ok) throw new Error('Failed to get questions');
+            const data = await response.json();
+            setMcqQuestions(data.questions || []);
         } catch (err) {
-            setGenerateError(err.message || 'Generation failed. Try again.');
+            // If questions fail, go straight to generate
+            setGenerateError(null);
+            setIsAskingQuestions(false);
+            setIsGenerating(true);
+            try {
+                const generated = await generateCarousel(prompt, slideCount);
+                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: s.elements || [] })));
+                setActiveIndex(0);
+            } catch (err2) {
+                setGenerateError(err2.message || 'Generation failed. Try again.');
+            } finally {
+                setIsGenerating(false);
+            }
         } finally {
-            setIsGenerating(false);
+            setIsAskingQuestions(false);
         }
-    }, [prompt, slideCount]);
+    }, [prompt, slideCount, mcqQuestions, mcqAnswers]);
 
     const handleExportSingle = useCallback(async (index) => {
         const ref = canvasRefs.current[index];
@@ -1084,12 +1159,57 @@ const CarouselEditor = ({ onClose }) => {
                                     <input type="number" min="2" max="50" value={slideCount} onChange={(e) => { const v = parseInt(e.target.value); if (v >= 2 && v <= 50) setSlideCount(v); }} className="ce-input" style={{ width: '3rem', textAlign: 'center' }} />
                                 </div>
                             </div>
-                            <button className="ce-btn ce-btn--primary ce-btn--full" onClick={handleGenerate} disabled={isGenerating || !prompt.trim()}>
-                                {isGenerating ? 'Generating...' : 'Generate Carousel'}
-                            </button>
-                            <button className="ce-btn ce-btn--ghost ce-btn--full" onClick={() => { setSlides(SAMPLE_SLIDES.map((s, i) => ({ ...s, id: Date.now() + i }))); setActiveIndex(0); }}>
-                                Load Sample
-                            </button>
+
+                            {/* MCQ Questions */}
+                            {mcqQuestions && mcqQuestions.length > 0 && (
+                                <div className="ce-mcq-section">
+                                    <div className="ce-mcq-header">
+                                        <span className="ce-mcq-icon">◈</span>
+                                        <span className="ce-label">AI has some questions to personalize your carousel:</span>
+                                    </div>
+                                    {mcqQuestions.map((q) => (
+                                        <div key={q.id} className="ce-mcq-question">
+                                            <p className="ce-mcq-q">{q.question}</p>
+                                            <div className="ce-mcq-options">
+                                                {q.options.map((opt, i) => (
+                                                    <button
+                                                        key={i}
+                                                        className={`ce-mcq-option ${mcqAnswers[q.id] === opt ? 'selected' : ''}`}
+                                                        onClick={() => setMcqAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                                                    >
+                                                        {opt}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        className="ce-btn ce-btn--primary ce-btn--full"
+                                        onClick={handleGenerate}
+                                        disabled={isGenerating || Object.keys(mcqAnswers).length === 0}
+                                    >
+                                        {isGenerating ? 'Generating...' : 'Generate With My Choices'}
+                                    </button>
+                                    <button className="ce-btn ce-btn--ghost ce-btn--full" onClick={() => { setMcqQuestions(null); setMcqAnswers({}); }}>
+                                        Skip Questions
+                                    </button>
+                                </div>
+                            )}
+
+                            {!mcqQuestions && (
+                                <button className="ce-btn ce-btn--primary ce-btn--full" onClick={handleGenerate} disabled={isGenerating || isAskingQuestions || !prompt.trim()}>
+                                    {isAskingQuestions ? 'Thinking...' : isGenerating ? 'Generating...' : 'Generate Carousel'}
+                                </button>
+                            )}
+
+                            <div className="ce-sample-styles">
+                                <span className="ce-label" style={{ fontSize: '0.7rem', marginBottom: '0.4rem', display: 'block' }}>Load Sample Style</span>
+                                {Object.entries(SAMPLE_STYLES).map(([key, style]) => (
+                                    <button key={key} className="ce-btn ce-btn--ghost ce-btn--style" onClick={() => { setSlides(style.slides.map((s, i) => ({ ...s, id: Date.now() + i }))); setActiveIndex(0); }}>
+                                        {style.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <div className="ce-slides-section">

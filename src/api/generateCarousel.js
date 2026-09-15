@@ -20,14 +20,14 @@ const FALLBACK_SLIDES = [
     },
 ];
 
-export async function generateCarousel(prompt, slideCount = 5, retries = 2) {
+export async function generateCarousel(prompt, slideCount = 5, answers = null, retries = 2) {
     let lastError;
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             const res = await fetch('/api/generateCarousel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, slideCount }),
+                body: JSON.stringify({ prompt, slideCount, answers }),
             });
 
             if (!res.ok) {

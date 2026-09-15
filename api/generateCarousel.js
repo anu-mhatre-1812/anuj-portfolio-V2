@@ -6,11 +6,29 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { prompt, slideCount: reqCount = 5 } = req.body || {};
+    const { prompt, slideCount: reqCount = 5, mode = 'generate', answers } = req.body || {};
     if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
 
     const slideCount = Math.min(50, Math.max(2, parseInt(reqCount, 10) || 5));
-    const maxTokens = Math.min(16000, Math.max(8192, slideCount * 800));
+    const maxTokens = mode === 'questions' ? 2000 : Math.min(16000, Math.max(8192, slideCount * 800));
+
+    const questionsMessage = `You are a carousel content strategist. The user wants to create a carousel about: "${prompt}"
+
+Based on this topic, generate 3-5 questions to help create better content. Each question should have 3-4 multiple choice options.
+
+Return ONLY a valid JSON object — no markdown, no code fences. Just raw JSON.
+
+JSON structure:
+{"questions":[{"id":1,"question":"string","options":["option A","option B","option C","option D"],"category":"tone|audience|goal|style|depth"}]}
+
+Question categories:
+- "tone": Professional, Casual, Humorous, Inspirational, Educational
+- "audience": Who is this for? (Beginners, Experts, General, Students, etc.)
+- "goal": What's the main goal? (Educate, Sell, Inspire, Entertain, Build brand)
+- "style": Visual style preference (Minimal, Bold, Corporate, Creative, Data-heavy)
+- "depth": How detailed? (Quick overview, Deep dive, Step-by-step, Case study)
+
+Make questions specific to the topic. Options should be concrete, not vague.`;
 
     const userMessage = `Return ONLY a valid JSON object — no markdown, no code fences, no explanation. Just raw JSON.
 
@@ -46,6 +64,8 @@ VARY bg colors between light (#FAFAFA, #F5F5F5, #F5F0E6) and dark (#0A0A0A, #1A1
 VARY fonts between heading fonts (Cabin Sketch, Rubik Scribble) and body fonts (Inter).`;
 
     // Provider chain: Groq (fast, generous free tier) → Gemini (backup)
+    const activeMessage = mode === 'questions' ? questionsMessage : (answers ? `${userMessage}\n\nUser's answers to your questions:\n${JSON.stringify(answers, null, 2)}\n\nUse these answers to tailor the content. Write in the chosen tone, for the chosen audience, with the chosen goal and style.` : userMessage);
+
     const providers = [
         {
             name: 'Groq',
@@ -96,7 +116,7 @@ VARY fonts between heading fonts (Cabin Sketch, Rubik Scribble) and body fonts (
                 const response = await fetch(provider.url, {
                     method: 'POST',
                     headers: provider.headers,
-                    body: provider.buildBody(userMessage, maxTokens),
+                    body: provider.buildBody(activeMessage, maxTokens),
                     signal: controller.signal,
                 });
 

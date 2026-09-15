@@ -126,6 +126,64 @@
   gap: 0.5rem;
 }
 
+.ce-mcq-section {
+  background: #f8f8f8;
+  border: 2px solid #1a1a1a;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ce-mcq-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ce-mcq-icon {
+  font-size: 1.2rem;
+  color: #cc3333;
+}
+
+.ce-mcq-question {
+  margin-bottom: 1rem;
+}
+
+.ce-mcq-q {
+  font-family: 'Cabin Sketch', cursive;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.ce-mcq-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ce-mcq-option {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid #ddd;
+  border-radius: 2px;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #1a1a1a;
+  }
+
+  &.selected {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+}
+
 .ce-count-buttons {
   display: flex;
   gap: 0.25rem;
@@ -632,6 +690,18 @@
 }
 
 // ─── Add Element Button ──────────────────────────────
+.ce-sample-styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.ce-btn--style {
+  font-size: 0.65rem !important;
+  padding: 0.3rem 0.6rem !important;
+}
+
 .ce-add-btns {
   position: absolute;
   bottom: 1.5rem;
