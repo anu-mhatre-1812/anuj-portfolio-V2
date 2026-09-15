@@ -160,6 +160,96 @@ function useDragElement(canvasScale, updateElement) {
     return { onPointerDown, onPointerMove, onPointerUp, dragRef };
 }
 
+/* ─── Draggable Text Element ─────────────────────────── */
+const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate, onPointerDown, onPointerMove, onPointerUp }) => {
+    const textRef = useRef(null);
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleDoubleClick = useCallback((e) => {
+        e.stopPropagation();
+        setIsEditing(true);
+        setTimeout(() => {
+            if (textRef.current) {
+                textRef.current.focus();
+                // Select all text
+                const range = document.createRange();
+                range.selectNodeContents(textRef.current);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }, 0);
+    }, []);
+
+    const handleBlur = useCallback(() => {
+        setIsEditing(false);
+        if (textRef.current) {
+            const newText = textRef.current.innerText;
+            if (newText !== elem.text) {
+                onUpdate({ text: newText });
+            }
+        }
+    }, [elem.text, onUpdate]);
+
+    const handleKeyDown = useCallback((e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            textRef.current?.blur();
+        }
+        if (e.key === 'Escape') {
+            textRef.current?.blur();
+        }
+        // Stop drag while typing
+        e.stopPropagation();
+    }, []);
+
+    const elemStyle = {
+        position: 'absolute',
+        left: `${elem.x}px`,
+        top: `${elem.y}px`,
+        width: `${elem.width || 400}px`,
+        fontFamily: elem.style.fontFamily,
+        fontSize: `${elem.style.fontSize}px`,
+        fontWeight: elem.style.bold ? 900 : elem.style.fontWeight,
+        fontStyle: elem.style.italic ? 'italic' : 'normal',
+        color: elem.style.color,
+        letterSpacing: `${elem.style.letterSpacing}px`,
+        textTransform: elem.style.textTransform,
+        textAlign: elem.style.textAlign,
+        cursor: isEditing ? 'text' : 'move',
+        userSelect: isEditing ? 'text' : 'none',
+        lineHeight: 1.2,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+    };
+
+    return (
+        <div
+            ref={textRef}
+            className={`slide-element ${isSelected ? 'selected' : ''} ${isEditing ? 'editing' : ''}`}
+            style={elemStyle}
+            contentEditable={isEditing}
+            suppressContentEditableWarning
+            spellCheck={false}
+            data-orig-x={elem.x}
+            data-orig-y={elem.y}
+            onPointerDown={(e) => {
+                if (isEditing) return;
+                onPointerDown(e, elem.id);
+                onSelect?.();
+            }}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onDoubleClick={handleDoubleClick}
+            onBlur={handleBlur}
+            onKeyDown={isEditing ? handleKeyDown : undefined}
+        >
+            {elem.text}
+        </div>
+    );
+});
+DraggableTextElement.displayName = 'DraggableTextElement';
+
 /* ─── SlideCanvas ────────────────────────────────────── */
 const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelectElement, onUpdateElement, showGrid }, ref) => {
     const width = 1080;
@@ -417,34 +507,15 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                 <React.Fragment key={elem.id}>
                     {renderShape(elem)}
                     {elem.type === 'text' && (
-                        <div
-                            className={`slide-element ${selectedElementId === elem.id ? 'selected' : ''}`}
-                            style={{
-                                position: 'absolute',
-                                left: `${elem.x}px`,
-                                top: `${elem.y}px`,
-                                width: `${elem.width || 400}px`,
-                                fontFamily: elem.style.fontFamily,
-                                fontSize: `${elem.style.fontSize}px`,
-                                fontWeight: elem.style.bold ? 900 : elem.style.fontWeight,
-                                fontStyle: elem.style.italic ? 'italic' : 'normal',
-                                color: elem.style.color,
-                                letterSpacing: `${elem.style.letterSpacing}px`,
-                                textTransform: elem.style.textTransform,
-                                textAlign: elem.style.textAlign,
-                                cursor: 'move',
-                                userSelect: 'none',
-                                lineHeight: 1.2,
-                            }}
-                            data-orig-x={elem.x}
-                            data-orig-y={elem.y}
-                            onPointerDown={(e) => {
-                                onPointerDown(e, elem.id);
-                                onSelectElement?.(elem.id);
-                            }}
-                        >
-                            {elem.text}
-                        </div>
+                        <DraggableTextElement
+                            elem={elem}
+                            isSelected={selectedElementId === elem.id}
+                            onSelect={() => onSelectElement?.(elem.id)}
+                            onUpdate={(updates) => updateElement(elem.id, updates)}
+                            onPointerDown={onPointerDown}
+                            onPointerMove={onPointerMove}
+                            onPointerUp={onPointerUp}
+                        />
                     )}
                 </React.Fragment>
             ))}

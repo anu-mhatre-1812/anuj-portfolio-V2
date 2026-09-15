@@ -676,6 +676,16 @@
     border-color: #cc3333;
     box-shadow: 0 0 0 1px #cc3333;
   }
+
+  &.editing {
+    border-color: #cc3333;
+    box-shadow: 0 0 0 2px #cc3333;
+    cursor: text !important;
+    user-select: text !important;
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 8px;
+  }
 }
 
 // ─── Shapes ──────────────────────────────────────────
