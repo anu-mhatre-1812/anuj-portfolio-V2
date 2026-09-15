@@ -12,97 +12,115 @@ export default async function handler(req, res) {
     const slideCount = Math.min(50, Math.max(2, parseInt(reqCount, 10) || 5));
     const maxTokens = Math.min(16000, Math.max(4096, slideCount * 500));
 
-    const userMessage = `You are a carousel content creator. Return ONLY a valid JSON object — no markdown, no code fences, no explanation. Just raw JSON.
+    const userMessage = `Return ONLY a valid JSON object — no markdown, no code fences, no explanation. Just raw JSON.
 
 JSON structure:
-{"slides":[{"title":"string","content":"string","layout":"hook-content-cta"|"bullet-list"|"numbered-list"|"big-text"|"split"|"quote","bullets":["string"],"bgColor":"#FAFAFA"|"#F5F5F5"|"#F5F0E6"|"#E8E2D5"|"#FFF8E8"|"#0A0A0A"|"#1A1A1A","textColor":"#1A1A1A"|"#FAFAFA","fontFamily":"'Rubik Scribble', cursive"|"Cabin Sketch', cursive"}]}
+{"slides":[{"title":"string","content":"string","layout":"hook-content-cta"|"bullet-list"|"big-text"|"split"|"quote","bullets":["string"],"bgColor":"#FAFAFA"|"#F5F5F5"|"#F5F0E6"|"#E8E2D5"|"#0A0A0A"|"#1A1A1A","textColor":"#1A1A1A"|"#FAFAFA","fontFamily":"Cabin Sketch, cursive"}]}
 
-Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last = CTA. Titles under 8 words, content under 30 words. Alternate layouts. Mostly light backgrounds.`;
+Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last = CTA. Titles under 8 words, content under 30 words.`;
 
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_KEY) return res.status(500).json({ error: 'Missing GEMINI_API_KEY' });
 
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
+    const MAX_RETRIES = 3;
 
-        const response = await fetch(
-            'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${GEMINI_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'gemini-3.6-flash',
-                    messages: [{ role: 'user', content: userMessage }],
-                    temperature: 0.7,
-                    max_tokens: maxTokens,
-                }),
-                signal: controller.signal,
-            }
-        );
-
-        clearTimeout(timeout);
-
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error('Gemini API error:', response.status, errText.slice(0, 300));
-            return res.status(502).json({ error: `Gemini API error: ${response.status}` });
-        }
-
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content;
-
-        if (!content) {
-            console.error('Gemini empty response:', JSON.stringify(data).slice(0, 300));
-            return res.status(500).json({ error: 'Empty AI response' });
-        }
-
-        // Parse JSON
-        let clean = content
-            .replace(/```(?:json)?\s*/gi, '')
-            .replace(/```\s*/g, '')
-            .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
-            .replace(/<think>[\s\S]*?<\/think>/gi, '')
-            .trim();
-
-        let parsed;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-            parsed = JSON.parse(clean);
-        } catch (e) {
-            const start = clean.indexOf('{');
-            if (start === -1) {
-                console.error('No JSON in response:', clean.slice(0, 300));
-                return res.status(500).json({ error: 'AI returned invalid JSON. Try again.', raw: clean.slice(0, 200) });
-            }
-            let depth = 0, end = -1;
-            for (let i = start; i < clean.length; i++) {
-                if (clean[i] === '{') depth++;
-                else if (clean[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
-            }
-            if (end === -1) {
-                console.error('Unmatched braces:', clean.slice(0, 300));
-                return res.status(500).json({ error: 'AI returned invalid JSON. Try again.', raw: clean.slice(0, 200) });
-            }
-            parsed = JSON.parse(clean.substring(start, end + 1));
-        }
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 30000);
 
-        if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
-            parsed.slides = [parsed.slides];
-        }
+            const response = await fetch(
+                'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GEMINI_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'gemini-3.6-flash',
+                        messages: [{ role: 'user', content: userMessage }],
+                        temperature: 0.7,
+                        max_tokens: maxTokens,
+                    }),
+                    signal: controller.signal,
+                }
+            );
 
-        if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
-            return res.status(500).json({ error: 'AI response missing slides array' });
-        }
+            clearTimeout(timeout);
 
-        return res.status(200).json(parsed);
-    } catch (err) {
-        console.error('Carousel API error:', err.message);
-        if (err.name === 'AbortError') {
-            return res.status(504).json({ error: 'AI request timed out. Try again.' });
+            // 429/503 = rate limited or overloaded — retry with backoff
+            if (response.status === 429 || response.status === 503) {
+                const waitMs = (attempt + 1) * 3000;
+                console.warn(`Attempt ${attempt + 1}: ${response.status} — retrying in ${waitMs}ms`);
+                await new Promise(r => setTimeout(r, waitMs));
+                continue;
+            }
+
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error('Gemini API error:', response.status, errText.slice(0, 300));
+                return res.status(502).json({ error: `Gemini API error: ${response.status}` });
+            }
+
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content;
+
+            if (!content) {
+                console.error('Gemini empty response:', JSON.stringify(data).slice(0, 300));
+                return res.status(500).json({ error: 'Empty AI response' });
+            }
+
+            // Parse JSON
+            let clean = content
+                .replace(/```(?:json)?\s*/gi, '')
+                .replace(/```\s*/g, '')
+                .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+                .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                .trim();
+
+            let parsed;
+            try {
+                parsed = JSON.parse(clean);
+            } catch (e) {
+                const start = clean.indexOf('{');
+                if (start === -1) {
+                    console.error('No JSON in response:', clean.slice(0, 300));
+                    return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+                }
+                let depth = 0, end = -1;
+                for (let i = start; i < clean.length; i++) {
+                    if (clean[i] === '{') depth++;
+                    else if (clean[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+                }
+                if (end === -1) {
+                    console.error('Unmatched braces:', clean.slice(0, 300));
+                    return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+                }
+                parsed = JSON.parse(clean.substring(start, end + 1));
+            }
+
+            if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
+                parsed.slides = [parsed.slides];
+            }
+
+            if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
+                return res.status(500).json({ error: 'AI response missing slides array' });
+            }
+
+            return res.status(200).json(parsed);
+
+        } catch (err) {
+            console.error(`Attempt ${attempt + 1} error:`, err.message);
+            if (err.name === 'AbortError' && attempt < MAX_RETRIES - 1) {
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
+            }
+            if (attempt === MAX_RETRIES - 1) {
+                return res.status(500).json({ error: 'AI service unavailable. Please try again in a moment.' });
+            }
         }
-        return res.status(500).json({ error: 'Server error: ' + err.message });
     }
+
+    return res.status(429).json({ error: 'AI is busy. Please wait a moment and try again.' });
 }
