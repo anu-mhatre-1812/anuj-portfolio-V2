@@ -164,23 +164,42 @@ Rules:
 
     let parsed;
     try {
+        // Strip markdown fences
         let clean = content.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
+
+        // Try direct parse
         try {
             parsed = JSON.parse(clean);
         } catch (e) {
-            const jsonMatch = clean.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                parsed = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error('No JSON object found in AI response');
+            // Find the outermost { ... } block using bracket counting
+            const start = clean.indexOf('{');
+            if (start === -1) throw new Error('No JSON object found');
+
+            let depth = 0;
+            let end = -1;
+            for (let i = start; i < clean.length; i++) {
+                if (clean[i] === '{') depth++;
+                else if (clean[i] === '}') {
+                    depth--;
+                    if (depth === 0) { end = i; break; }
+                }
             }
+
+            if (end === -1) throw new Error('Unmatched braces in AI response');
+
+            parsed = JSON.parse(clean.substring(start, end + 1));
+        }
+
+        // Fix common model mistakes: wrap single slide object in array
+        if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
+            parsed.slides = [parsed.slides];
         }
     } catch (e) {
         console.error('Failed to parse AI JSON:', content.slice(0, 500));
         return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
     }
 
-    if (!parsed.slides || !Array.isArray(parsed.slides)) {
+    if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
         return res.status(500).json({ error: 'AI response missing slides array' });
     }
 
