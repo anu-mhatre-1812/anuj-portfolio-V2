@@ -340,21 +340,6 @@
   box-sizing: border-box;
 }
 
-.slide-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24px 72px;
-  text-align: right;
-}
-
-.slide-footer-text {
-  font-family: 'Cabin Sketch', cursive;
-  font-size: 24px;
-  opacity: 0.5;
-}
-
 // ─── Slide Layouts ──────────────────────────────────────
 .slide-title {
   font-size: 64px;
@@ -637,4 +622,266 @@
     font-size: 0.65rem;
     border-width: 1px;
   }
+}
+
+// ─── Divider ─────────────────────────────────────────
+.ce-divider {
+  border: none;
+  border-top: 1px dashed #ccc;
+  margin: 0.3rem 0;
+}
+
+// ─── Add Element Button ──────────────────────────────
+.ce-add-element-btn {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1.2rem;
+  background: #1a1a1a;
+  color: #fafafa;
+  border: 2px solid #1a1a1a;
+  border-radius: 2px;
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #cc3333;
+    border-color: #cc3333;
+  }
+}
+
+// ─── Draggable Elements ──────────────────────────────
+.slide-element {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  padding: 4px 8px;
+  transition: border-color 0.1s;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  &:hover {
+    border-color: rgba(204, 51, 51, 0.4);
+  }
+
+  &.selected {
+    border-color: #cc3333;
+    box-shadow: 0 0 0 1px #cc3333;
+  }
+}
+
+// ─── Shapes ──────────────────────────────────────────
+.slide-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+
+  &--rect {
+    border-radius: 4px;
+  }
+
+  &--rounded {
+    border-radius: 16px;
+  }
+
+  &--pill {
+    border-radius: 999px;
+  }
+
+  &--circle {
+    border-radius: 50%;
+  }
+}
+
+// ─── Grid Mode ───────────────────────────────────────
+.slide-canvas--grid {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+// ─── Branding Positions ──────────────────────────────
+.slide-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 72px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &--bottom-right {
+    justify-content: flex-end;
+  }
+
+  &--bottom-left {
+    justify-content: flex-start;
+  }
+
+  &--bottom-center {
+    justify-content: center;
+  }
+}
+
+.slide-footer-logo {
+  height: 24px;
+  object-fit: contain;
+}
+
+.slide-footer-text {
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 24px;
+  opacity: 0.5;
+}
+
+// ─── Floating Toolbar ────────────────────────────────
+.ce-floating-toolbar {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  background: #1a1a1a;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  z-index: 20;
+  animation: ce-fadeIn 0.15s ease;
+}
+
+@keyframes ce-fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.ce-float-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.ce-float-btn {
+  padding: 0.2rem 0.4rem;
+  background: transparent;
+  color: #fafafa;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s;
+  min-width: 1.5rem;
+  text-align: center;
+
+  &:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  &.active {
+    background: #cc3333;
+    border-color: #cc3333;
+  }
+
+  &--danger {
+    color: #ff6b6b;
+    &:hover {
+      background: #cc3333;
+      color: #fff;
+    }
+  }
+}
+
+.ce-float-input {
+  width: 3rem;
+  padding: 0.15rem 0.3rem;
+  background: rgba(255,255,255,0.1);
+  color: #fafafa;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  text-align: center;
+  outline: none;
+
+  &:focus {
+    border-color: #cc3333;
+  }
+
+  &--small {
+    width: 2.5rem;
+  }
+
+  /* Hide spinner */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
+}
+
+.ce-float-unit {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  color: #888;
+}
+
+.ce-float-select {
+  padding: 0.15rem 0.3rem;
+  background: rgba(255,255,255,0.1);
+  color: #fafafa;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: #cc3333;
+  }
+
+  option {
+    background: #1a1a1a;
+    color: #fafafa;
+  }
+}
+
+.ce-float-color {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 2px;
+  cursor: pointer;
+  background: transparent;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 1px;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 1px;
+  }
+}
+
+.ce-float-divider {
+  width: 1px;
+  height: 1.2rem;
+  background: rgba(255,255,255,0.2);
+  margin: 0 0.1rem;
 }
