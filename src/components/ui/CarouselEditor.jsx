@@ -241,6 +241,7 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onDoubleClick={handleDoubleClick}
+            onClick={(e) => e.stopPropagation()}
             onBlur={handleBlur}
             onKeyDown={isEditing ? handleKeyDown : undefined}
         >
