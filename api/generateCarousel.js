@@ -142,8 +142,8 @@ Rules:
             lastError = await response.text();
             console.warn(`${provider.name} ${model} returned ${response.status}:`, lastError);
 
-            // Skip to next model/provider on capacity or endpoint errors
-            if (response.status === 429 || response.status === 503 || response.status === 404) {
+            // Skip to next model/provider on transient errors
+            if ([400, 404, 429, 500, 503].includes(response.status)) {
                 continue;
             }
 
