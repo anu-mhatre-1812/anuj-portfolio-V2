@@ -122,15 +122,32 @@ Rules:
         try {
           // Token Harbor free models use independent allocations. Prefer the most capable
           // DeepSeek route and fall back to the other free models when capacity is exhausted.
-          const models = [
+          const tokenHarborModels = [
             'deepseek-v4.1-flash:free',
             'deepseek-v4-flash:free',
             'mimo-v2.5:free',
           ];
+
+          // OpenCode Zen fallback — used when all Token Harbor free models are busy.
+          const OPENCODE_ZEN_KEY = 'sk-PUqnTbNf6AqJ7JJAoSh84ma8e4epTiafsNAkz6RdnjJhynv6byQ76juzRFkXrAIS';
+          const OPENCODE_ZEN_URL = 'https://opencode-zen-api.humperfy.workers.dev/v1/chat/completions';
+          const openCodeModels = ['mimo-v2.5-free'];
+
+          const buildBody = (model) => JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
+            ],
+            temperature: 0.7,
+            max_tokens: maxTokens,
+          });
+
           let apiRes;
           let lastError = '';
 
-          for (const model of models) {
+          // --- Try Token Harbor free models first ---
+          for (const model of tokenHarborModels) {
             let response;
             try {
               response = await fetch('https://tokenharbor.ai/v1/chat/completions', {
@@ -139,17 +156,7 @@ Rules:
                   'Authorization': `Bearer ${apiKey}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                  model,
-                  messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
-                  ],
-                  temperature: 0.7,
-                  max_tokens: maxTokens,
-                }),
-                // A free model can occasionally accept but never finish a request.
-                // Move to the next provider quickly instead of leaving the editor stuck.
+                body: buildBody(model),
                 signal: AbortSignal.timeout(8000),
               });
             } catch (error) {
@@ -168,8 +175,6 @@ Rules:
             lastError = await response.text();
             console.warn(`Token Harbor model ${model} returned ${response.status}:`, lastError);
 
-            // Non-capacity errors (invalid key, bad request, etc.) cannot be solved by
-            // switching models, so return them immediately.
             if (response.status !== 429 && response.status !== 503) {
               res.writeHead(response.status, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: `AI API error: ${response.status}` }));
@@ -177,8 +182,48 @@ Rules:
             }
           }
 
+          // --- Fallback: OpenCode Zen free models ---
           if (!apiRes) {
-            console.error('All free Token Harbor models are temporarily unavailable:', lastError);
+            console.warn('Token Harbor exhausted, falling back to OpenCode Zen');
+            for (const model of openCodeModels) {
+              let response;
+              try {
+                response = await fetch(OPENCODE_ZEN_URL, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${OPENCODE_ZEN_KEY}`,
+                    'Content-Type': 'application/json',
+                    'x-opencode-session': `carousel-${Date.now()}`,
+                  },
+                  body: buildBody(model),
+                  signal: AbortSignal.timeout(12000),
+                });
+              } catch (error) {
+                lastError = error.name === 'TimeoutError'
+                  ? `OpenCode ${model} timed out`
+                  : error.message;
+                console.warn(`OpenCode model ${model} request failed:`, lastError);
+                continue;
+              }
+
+              if (response.ok) {
+                apiRes = response;
+                break;
+              }
+
+              lastError = await response.text();
+              console.warn(`OpenCode model ${model} returned ${response.status}:`, lastError);
+
+              if (response.status !== 429 && response.status !== 503) {
+                res.writeHead(response.status, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: `AI API error: ${response.status}` }));
+                return;
+              }
+            }
+          }
+
+          if (!apiRes) {
+            console.error('All AI models temporarily unavailable:', lastError);
             res.writeHead(429, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Free AI models are busy. Please wait a minute and try again.' }));
             return;
