@@ -56,6 +56,7 @@ const DEFAULT_BRANDING = () => ({
     text: '@anujmhatre',
     logoUrl: null,
     fontSize: 24,
+    logoSize: 32,
     opacity: 0.5,
     position: 'bottom-right',
 });
@@ -524,7 +525,7 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
             {/* Branding Footer */}
             <div className={`slide-footer slide-footer--${branding.position}`}>
                 {branding.logoUrl && (
-                    <img src={branding.logoUrl} alt="" className="slide-footer-logo" style={{ height: `${branding.fontSize * 1.2}px`, opacity: branding.opacity }} />
+                    <img src={branding.logoUrl} alt="" className="slide-footer-logo" style={{ height: `${branding.logoSize || 32}px`, opacity: branding.opacity }} />
                 )}
                 <span className="slide-footer-text" style={{ fontSize: `${branding.fontSize}px`, opacity: branding.opacity }}>
                     {branding.text}
@@ -1053,6 +1054,12 @@ const CarouselEditor = ({ onClose }) => {
                                 <input type="file" accept="image/*" onChange={handleBrandingLogoUpload} className="ce-file-input" />
                                 {activeSlide.branding?.logoUrl && <button className="ce-btn ce-btn--tiny" onClick={() => { const branding = { ...(activeSlide.branding || DEFAULT_BRANDING()), logoUrl: null }; updateSlide(activeIndex, { branding }); }}>Remove Logo</button>}
                             </div>
+                            {activeSlide.branding?.logoUrl && (
+                                <div className="ce-field">
+                                    <label className="ce-label">Logo Size</label>
+                                    <input type="range" min="16" max="80" value={activeSlide.branding?.logoSize || 32} onChange={(e) => { const branding = { ...(activeSlide.branding || DEFAULT_BRANDING()), logoSize: parseInt(e.target.value) }; updateSlide(activeIndex, { branding }); }} style={{ width: '100%' }} />
+                                </div>
+                            )}
 
                             <div className="ce-divider" />
                             <div className="ce-field">
