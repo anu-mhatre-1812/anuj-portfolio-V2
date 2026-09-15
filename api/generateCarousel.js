@@ -65,7 +65,25 @@ Rules:
     });
 
     const providers = [
-        // 1. Token Harbor
+        // 1. Google Gemini (most reliable, tested working)
+        {
+            name: 'Gemini',
+            url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+            key: process.env.GEMINI_API_KEY,
+            models: ['gemini-3.6-flash'],
+            timeout: 15000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
+        },
+        // 2. OpenRouter free models
+        {
+            name: 'OpenRouter',
+            url: 'https://openrouter.ai/api/v1/chat/completions',
+            key: process.env.OPENROUTER_API_KEY,
+            models: ['nvidia/nemotron-3.5-lightning:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'inclusionai/ling-3.0-flash-sante:free'],
+            timeout: 15000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://anujmhatre.me', 'X-Title': 'Anuj Portfolio' }),
+        },
+        // 3. Token Harbor
         {
             name: 'Token Harbor',
             url: 'https://tokenharbor.ai/v1/chat/completions',
@@ -74,34 +92,7 @@ Rules:
             timeout: 8000,
             headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
         },
-        // 2. Groq
-        {
-            name: 'Groq',
-            url: 'https://api.groq.com/openai/v1/chat/completions',
-            key: process.env.GROQ_API_KEY,
-            models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'],
-            timeout: 10000,
-            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
-        },
-        // 3. OpenRouter
-        {
-            name: 'OpenRouter',
-            url: 'https://openrouter.ai/api/v1/chat/completions',
-            key: process.env.OPENROUTER_API_KEY,
-            models: ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemma-2-9b-it:free', 'mistralai/mistral-7b-instruct:free'],
-            timeout: 10000,
-            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://anujmhatre.me', 'X-Title': 'Anuj Portfolio' }),
-        },
-        // 4. Google Gemini
-        {
-            name: 'Gemini',
-            url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-            key: process.env.GEMINI_API_KEY,
-            models: ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'],
-            timeout: 12000,
-            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
-        },
-        // 5. OpenCode Zen (last resort)
+        // 4. OpenCode Zen (last resort)
         {
             name: 'OpenCode Zen',
             url: 'https://opencode.ai/zen/v1/chat/completions',
