@@ -24,7 +24,8 @@ const SUBTITLES = {
     'THE GALLERY': 'Explore my creative projects',
     'THE STUDIO': 'Watch behind the scenes',
     'DEV DIARY': 'My development journey',
-    "LET'S CONNECT": 'Get in touch with me'
+    "LET'S CONNECT": 'Get in touch with me',
+    'CAROUSEL LAB': 'Create social slides with AI'
 };
 
 // Naturalny kafelek listwy: 1582x94px przy wysokości 0.15 → ~2.524 units szerokości
@@ -125,7 +126,7 @@ const RoomInterior = memo(({ label, showRoom, onReady, isExiting }) => {
 
     // Trigger onReady for generic rooms (which don't have their own component to do it)
     useEffect(() => {
-        if (showRoom && !['THE GALLERY', 'THE STUDIO', 'THE ABOUT', "LET'S CONNECT", 'CAROUSEL'].includes(label)) {
+        if (showRoom && !['THE GALLERY', 'THE STUDIO', 'THE ABOUT', "LET'S CONNECT", 'CAROUSEL LAB'].includes(label)) {
             onReady?.();
         }
     }, [showRoom, label, onReady]);
@@ -221,7 +222,7 @@ const RoomInterior = memo(({ label, showRoom, onReady, isExiting }) => {
                                 <ContactRoom showRoom={showRoom} onReady={onReady} isExiting={isExiting} />
                             </Suspense>
                         </group>
-                    ) : label === 'CAROUSEL' ? (
+                    ) : label === 'CAROUSEL LAB' ? (
                         // === NEW CAROUSEL ROOM ===
                         <group position={[0, -0.5, -corridorDepth]}>
                             <Suspense fallback={null}>
