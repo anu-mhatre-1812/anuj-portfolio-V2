@@ -12,6 +12,17 @@ const FONT_OPTIONS = [
     { label: 'Inter', value: "'Inter', sans-serif", category: 'body' },
     { label: 'Caveat', value: "'Caveat', cursive", category: 'accent' },
     { label: 'Gloria Hallelujah', value: "'Gloria Hallelujah', cursive", category: 'accent' },
+    { label: 'Outfit', value: "'Outfit', sans-serif", category: 'modern' },
+    { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif", category: 'modern' },
+    { label: 'Syne', value: "'Syne', sans-serif", category: 'modern' },
+    { label: 'Clash Display', value: "'Clash Display', sans-serif", category: 'display' },
+    { label: 'DM Serif Display', value: "'DM Serif Display', serif", category: 'display' },
+    { label: 'Playfair Display', value: "'Playfair Display', serif", category: 'display' },
+    { label: 'Sora', value: "'Sora', sans-serif", category: 'modern' },
+    { label: 'Plus Jakarta Sans', value: "'Plus Jakarta Sans', sans-serif", category: 'modern' },
+    { label: 'Cabinet Grotesk', value: "'Cabinet Grotesk', sans-serif", category: 'display' },
+    { label: 'Satoshi', value: "'Satoshi', sans-serif", category: 'modern' },
+    { label: 'General Sans', value: "'General Sans', sans-serif", category: 'modern' },
 ];
 
 const COLOR_PALETTE = [
@@ -53,18 +64,18 @@ const SHAPE_OPTIONS = [
 ];
 
 const SLIDE_STYLE_PRESETS = [
-    { id: 'neo-brutal', label: 'Neo Brutal', emoji: '\u{1F4A5}', bg: '#FFFFFF', text: '#1A1A1A', accent: '#CC3333', font: "'Cabin Sketch', cursive", titleSize: 72, contentSize: 28 },
+    { id: 'neo-brutal', label: 'Neo Brutal', emoji: '\u{1F4A5}', bg: '#FFFFFF', text: '#1A1A1A', accent: '#CC3333', font: "'Space Grotesk', sans-serif", titleSize: 72, contentSize: 28 },
     { id: 'dark-mode', label: 'Dark Mode', emoji: '\u{1F319}', bg: '#0D0D0D', text: '#F5F5F5', accent: '#00E5FF', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
-    { id: 'cyber-punk', label: 'Cyber Punk', emoji: '\u{1F4F0}', bg: '#1A0033', text: '#FF2E97', accent: '#00E5FF', font: "'Space Mono', monospace", titleSize: 64, contentSize: 26 },
-    { id: 'minimal-white', label: 'Minimal White', emoji: '\u{26AA}', bg: '#FAFAFA', text: '#222222', accent: '#CC3333', font: "'Inter', sans-serif", titleSize: 52, contentSize: 24 },
-    { id: 'ocean-blue', label: 'Ocean Blue', emoji: '\u{1F30A}', bg: '#0A192F', text: '#CCD6F6', accent: '#64FFDA', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
-    { id: 'sunset', label: 'Sunset', emoji: '\u{1F305}', bg: '#FF6B35', text: '#FFFFFF', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 64, contentSize: 26 },
-    { id: 'forest', label: 'Forest', emoji: '\u{1F33F}', bg: '#1B2D1B', text: '#A8D5BA', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 56, contentSize: 24 },
-    { id: 'royal-purple', label: 'Royal Purple', emoji: '\u{1F451}', bg: '#2D0A3E', text: '#E8C1F7', accent: '#FFD700', font: "'Space Mono', monospace", titleSize: 60, contentSize: 24 },
+    { id: 'cyber-punk', label: 'Cyber Punk', emoji: '\u{1F4F0}', bg: '#1A0033', text: '#FF2E97', accent: '#00E5FF', font: "'Syne', sans-serif", titleSize: 64, contentSize: 26 },
+    { id: 'minimal-white', label: 'Minimal White', emoji: '\u{26AA}', bg: '#FAFAFA', text: '#222222', accent: '#CC3333', font: "'Outfit', sans-serif", titleSize: 52, contentSize: 24 },
+    { id: 'ocean-blue', label: 'Ocean Blue', emoji: '\u{1F30A}', bg: '#0A192F', text: '#CCD6F6', accent: '#64FFDA', font: "'Space Grotesk', sans-serif", titleSize: 56, contentSize: 24 },
+    { id: 'sunset', label: 'Sunset', emoji: '\u{1F305}', bg: '#FF6B35', text: '#FFFFFF', accent: '#FFD700', font: "'Plus Jakarta Sans', sans-serif", titleSize: 64, contentSize: 26 },
+    { id: 'forest', label: 'Forest', emoji: '\u{1F33F}', bg: '#1B2D1B', text: '#A8D5BA', accent: '#FFD700', font: "'Outfit', sans-serif", titleSize: 56, contentSize: 24 },
+    { id: 'royal-purple', label: 'Royal Purple', emoji: '\u{1F451}', bg: '#2D0A3E', text: '#E8C1F7', accent: '#FFD700', font: "'Syne', sans-serif", titleSize: 60, contentSize: 24 },
     { id: 'paper', label: 'Paper', emoji: '\u{1F4DD}', bg: '#F5F0E8', text: '#3D3229', accent: '#CC3333', font: "'Caveat', cursive", titleSize: 52, contentSize: 26 },
-    { id: 'neon-glow', label: 'Neon Glow', emoji: '\u{1F4A1}', bg: '#0A0A0A', text: '#39FF14', accent: '#FF073A', font: "'Space Mono', monospace", titleSize: 60, contentSize: 24 },
-    { id: 'candy', label: 'Candy', emoji: '\u{1F36C}', bg: '#FF69B4', text: '#FFFFFF', accent: '#FFD700', font: "'Cabin Sketch', cursive", titleSize: 64, contentSize: 26 },
-    { id: 'carbon', label: 'Carbon', emoji: '\u{267B}\u{FE0F}', bg: '#1C1C1C', text: '#E0E0E0', accent: '#FF4444', font: "'Space Mono', monospace", titleSize: 56, contentSize: 24 },
+    { id: 'neon-glow', label: 'Neon Glow', emoji: '\u{1F4A1}', bg: '#0A0A0A', text: '#39FF14', accent: '#FF073A', font: "'Sora', sans-serif", titleSize: 60, contentSize: 24 },
+    { id: 'candy', label: 'Candy', emoji: '\u{1F36C}', bg: '#FF69B4', text: '#FFFFFF', accent: '#FFD700', font: "'Outfit', sans-serif", titleSize: 64, contentSize: 26 },
+    { id: 'carbon', label: 'Carbon', emoji: '\u{267B}\u{FE0F}', bg: '#1C1C1C', text: '#E0E0E0', accent: '#FF4444', font: "'Satoshi', sans-serif", titleSize: 56, contentSize: 24 },
 ];
 
 const DEFAULT_BRANDING = () => ({
@@ -92,6 +103,9 @@ const DEFAULT_ELEMENT = (overrides = {}) => ({
     rotation: 0,
     shape: 'none',
     shapeColor: '#CC3333',
+    textEffect: 'none',
+    gradientColors: ['#FF6B35', '#FF2E97'],
+    glowColor: '#FF2E97',
     style: {
         fontSize: 48,
         fontFamily: "'Cabin Sketch', cursive",
@@ -314,7 +328,12 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
         fontSize: `${elem.style.fontSize}px`,
         fontWeight: elem.style.bold ? 900 : elem.style.fontWeight,
         fontStyle: elem.style.italic ? 'italic' : 'normal',
-        color: elem.style.color,
+        color: elem.textEffect === 'gradient' ? 'transparent' : elem.style.color,
+        background: elem.textEffect === 'gradient' ? `linear-gradient(135deg, ${elem.gradientColors?.[0] || '#FF6B35'}, ${elem.gradientColors?.[1] || '#FF2E97'})` : undefined,
+        WebkitBackgroundClip: elem.textEffect === 'gradient' ? 'text' : undefined,
+        backgroundClip: elem.textEffect === 'gradient' ? 'text' : undefined,
+        WebkitTextFillColor: elem.textEffect === 'gradient' ? 'transparent' : undefined,
+        textShadow: elem.textEffect === 'glow' ? `0 0 10px ${elem.glowColor || '#FF2E97'}, 0 0 30px ${elem.glowColor || '#FF2E97'}, 0 0 60px ${elem.glowColor || '#FF2E97'}` : elem.textEffect === 'shadow' ? '3px 3px 0 rgba(0,0,0,0.3)' : undefined,
         letterSpacing: `${elem.style.letterSpacing}px`,
         textTransform: elem.style.textTransform,
         textAlign: elem.style.textAlign,
@@ -324,6 +343,8 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-word',
         transform: elem.rotation ? `rotate(${elem.rotation}deg)` : undefined,
+        borderBottom: elem.textEffect === 'underline-accent' ? `4px solid ${elem.glowColor || '#CC3333'}` : undefined,
+        paddingBottom: elem.textEffect === 'underline-accent' ? '8px' : undefined,
     };
 
     return (
@@ -930,6 +951,35 @@ const FloatingToolbar = ({ element, onUpdate, onShapeChange, onDelete, onDuplica
                 />
                 <span className="ce-float-unit">lh</span>
             </div>
+            <div className="ce-float-divider" />
+            <div className="ce-float-group">
+                <select
+                    className="ce-float-select"
+                    value={element.textEffect || 'none'}
+                    onChange={(e) => onUpdate({ textEffect: e.target.value })}
+                    title="Text Effect"
+                >
+                    <option value="none">Style</option>
+                    <option value="gradient">Gradient</option>
+                    <option value="glow">Neon Glow</option>
+                    <option value="shadow">3D Shadow</option>
+                    <option value="underline-accent">Underline</option>
+                </select>
+            </div>
+            {(element.textEffect === 'gradient' || element.textEffect === 'glow' || element.textEffect === 'underline-accent') && (
+                <>
+                    <div className="ce-float-divider" />
+                    <div className="ce-float-group">
+                        <input
+                            type="color"
+                            className="ce-float-color"
+                            value={element.glowColor || '#FF2E97'}
+                            onChange={(e) => onUpdate({ glowColor: e.target.value })}
+                            title="Effect Color"
+                        />
+                    </div>
+                </>
+            )}
             <div className="ce-float-divider" />
             <button className="ce-float-btn" onClick={onDuplicate} title="Duplicate">⧉</button>
             <button className="ce-float-btn ce-float-btn--danger" onClick={onDelete}>×</button>
