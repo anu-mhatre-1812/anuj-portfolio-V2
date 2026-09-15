@@ -19,50 +19,27 @@ export default async function handler(req, res) {
     const slideCount = Math.min(50, Math.max(2, Number.parseInt(requestedSlideCount, 10) || 5));
     const maxTokens = Math.min(9000, Math.max(1400, slideCount * 175));
 
-    const systemPrompt = `You are a carousel content creator for a creative developer portfolio. You MUST return ONLY valid JSON, no markdown, no explanations.
+    const systemPrompt = `You are a carousel content creator. Return ONLY a valid JSON object with a "slides" array. No markdown, no code fences, no explanations — just raw JSON.
 
-The portfolio design system:
-- Hand-drawn / sketch-inspired aesthetic
-- Neo-brutalist, editorial composition
-- Strong outlines, intentional spacing
-- Warm, tactile, creative personality
-- Fonts: Rubik Scribble (headings), Cabin Sketch (labels), Inter (body)
+Each slide object must have: title (string), content (string), layout (one of: "hook-content-cta", "bullet-list", "numbered-list", "big-text", "split", "quote"), bullets (array of strings, empty if not bullet/numbered), bgColor (one of: "#FAFAFA", "#F5F5F5", "#F5F0E6", "#E8E2D5", "#FFF8E8", "#0A0A0A", "#1A1A1A"), textColor (one of: "#1A1A1A", "#FAFAFA"), fontFamily (one of: "'Rubik Scribble', cursive", "'Cabin Sketch', cursive").
 
-Return a JSON object with this exact structure:
-{
-  "slides": [
-    {
-      "title": "string (short, punchy headline)",
-      "content": "string (1-2 sentences, concise)",
-      "layout": "hook-content-cta" | "bullet-list" | "numbered-list" | "big-text" | "split" | "quote",
-      "bullets": ["string"] (only for bullet-list/numbered-list layouts, otherwise empty array),
-      "bgColor": "#FAFAFA" | "#F5F5F5" | "#F5F0E6" | "#E8E2D5" | "#FFF8E8" | "#0A0A0A" | "#1A1A1A",
-      "textColor": "#1A1A1A" | "#FAFAFA",
-      "fontFamily": "'Rubik Scribble', cursive" | "'Cabin Sketch', cursive"
-    }
-  ]
-}
+Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, middle = value, last = CTA. Titles under 8 words, content under 30 words. Alternate layouts. Mostly light backgrounds.`;
 
-Rules:
-- First slide = strong hook (why should someone swipe?)
-- Middle slides = valuable content (tips, insights, steps)
-- Last slide = clear CTA (follow, save, share)
-- Use ${slideCount} slides total
-- Keep titles under 8 words
-- Keep content under 30 words per slide
-- Alternate between layouts for visual variety
-- Use bgColor sparingly — mostly light backgrounds with dark text
-- Every slide must feel like part of one designed system`;
-
-    const buildBody = (model) => JSON.stringify({
-        model,
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
-        ],
-        temperature: 0.7,
-        max_tokens: maxTokens,
-    });
+    const buildBody = (model) => {
+        const body = {
+            model,
+            messages: [
+                { role: 'user', content: systemPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: maxTokens,
+        };
+        // Force JSON output for models that support it
+        if (!model.includes('mimo')) {
+            body.response_format = { type: 'json_object' };
+        }
+        return JSON.stringify(body);
+    };
 
     const providers = [
         // 1. Google Gemini (most reliable, tested working)
@@ -159,14 +136,19 @@ Rules:
 
     let parsed;
     try {
-        // Strip markdown fences
-        let clean = content.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
+        // Strip markdown fences and thinking tags
+        let clean = content
+            .replace(/```(?:json)?\s*/gi, '')
+            .replace(/```\s*/g, '')
+            .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+            .replace(/<think>[\s\S]*?<\/think>/gi, '')
+            .trim();
 
         // Try direct parse
         try {
             parsed = JSON.parse(clean);
         } catch (e) {
-            // Find the outermost { ... } block using bracket counting
+            // Find outermost { ... } with bracket counting
             const start = clean.indexOf('{');
             if (start === -1) throw new Error('No JSON object found');
 
@@ -180,17 +162,16 @@ Rules:
                 }
             }
 
-            if (end === -1) throw new Error('Unmatched braces in AI response');
-
+            if (end === -1) throw new Error('Unmatched braces');
             parsed = JSON.parse(clean.substring(start, end + 1));
         }
 
-        // Fix common model mistakes: wrap single slide object in array
+        // Fix common mistakes
         if (parsed && !Array.isArray(parsed.slides) && typeof parsed.slides === 'object') {
             parsed.slides = [parsed.slides];
         }
     } catch (e) {
-        console.error('Failed to parse AI JSON:', content.slice(0, 500));
+        console.error('Parse error, raw content:', content.slice(0, 300));
         return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
     }
 
