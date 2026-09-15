@@ -74,6 +74,7 @@ const DEFAULT_ELEMENT = (overrides = {}) => ({
     text: 'New Text',
     imageUrl: null,
     imageAspect: 1,
+    rotation: 0,
     shape: 'none',
     shapeColor: '#CC3333',
     style: {
@@ -86,6 +87,7 @@ const DEFAULT_ELEMENT = (overrides = {}) => ({
         letterSpacing: 0,
         textTransform: 'none',
         textAlign: 'left',
+        lineHeight: 1.2,
     },
     ...overrides,
 });
@@ -205,6 +207,9 @@ function useDragElement(canvasScale, updateElement) {
 const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate, onPointerDown, onPointerMove, onPointerUp }) => {
     const textRef = useRef(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
+    const [isRotating, setIsRotating] = useState(false);
+    const startRef = useRef({});
 
     const handleDoubleClick = useCallback((e) => {
         e.stopPropagation();
@@ -212,7 +217,6 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
         setTimeout(() => {
             if (textRef.current) {
                 textRef.current.focus();
-                // Select all text
                 const range = document.createRange();
                 range.selectNodeContents(textRef.current);
                 const sel = window.getSelection();
@@ -240,9 +244,51 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
         if (e.key === 'Escape') {
             textRef.current?.blur();
         }
-        // Stop drag while typing
         e.stopPropagation();
     }, []);
+
+    const handleResizeStart = useCallback((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsResizing(true);
+        startRef.current = { startX: e.clientX, startY: e.clientY, startW: elem.width || 400 };
+        const onMove = (ev) => {
+            const dx = (ev.clientX - startRef.current.startX) / (elem._scale || 1);
+            const newW = Math.max(100, startRef.current.startW + dx);
+            onUpdate({ width: newW });
+        };
+        const onUp = () => {
+            setIsResizing(false);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    }, [elem.width, elem._scale, onUpdate]);
+
+    const handleRotateStart = useCallback((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsRotating(true);
+        const rect = textRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+        const origRotation = elem.rotation || 0;
+        const onMove = (ev) => {
+            const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * (180 / Math.PI);
+            const newRot = Math.round(origRotation + angle - startAngle);
+            onUpdate({ rotation: newRot });
+        };
+        const onUp = () => {
+            setIsRotating(false);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    }, [elem.rotation, onUpdate]);
 
     const elemStyle = {
         position: 'absolute',
@@ -259,9 +305,10 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
         textAlign: elem.style.textAlign,
         cursor: isEditing ? 'text' : 'move',
         userSelect: isEditing ? 'text' : 'none',
-        lineHeight: 1.2,
+        lineHeight: elem.style.lineHeight || 1.2,
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-word',
+        transform: elem.rotation ? `rotate(${elem.rotation}deg)` : undefined,
     };
 
     return (
@@ -275,7 +322,7 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
             data-orig-x={elem.x}
             data-orig-y={elem.y}
             onPointerDown={(e) => {
-                if (isEditing) return;
+                if (isEditing || isResizing || isRotating) return;
                 onPointerDown(e, elem.id);
                 onSelect?.();
             }}
@@ -287,6 +334,14 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
             onKeyDown={isEditing ? handleKeyDown : undefined}
         >
             {elem.text}
+            {isSelected && !isEditing && (
+                <>
+                    <div className="slide-resize-handle" onPointerDown={handleResizeStart} style={{ position: 'absolute', right: -6, bottom: -6, width: 12, height: 12, background: '#cc3333', cursor: 'se-resize', borderRadius: 2, zIndex: 2 }} />
+                    <div className="slide-rotate-handle" onPointerDown={handleRotateStart} style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)', width: 14, height: 14, background: '#fff', border: '2px solid #cc3333', borderRadius: '50%', cursor: 'grab', zIndex: 2 }}>
+                        <svg viewBox="0 0 24 24" width="10" height="10" style={{ position: 'absolute', top: 1, left: 1 }}><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#cc3333"/></svg>
+                    </div>
+                </>
+            )}
         </div>
     );
 });
@@ -295,7 +350,9 @@ DraggableTextElement.displayName = 'DraggableTextElement';
 /* ─── Draggable Image Element ────────────────────────── */
 const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate, onPointerDown, onPointerMove, onPointerUp }) => {
     const [isResizing, setIsResizing] = useState(false);
+    const [isRotating, setIsRotating] = useState(false);
     const startRef = useRef({});
+    const imgRef = useRef(null);
 
     const handleResizeStart = useCallback((e) => {
         e.stopPropagation();
@@ -317,8 +374,33 @@ const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate
         window.addEventListener('pointerup', onUp);
     }, [elem.width, elem.imageAspect, onUpdate]);
 
+    const handleRotateStart = useCallback((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsRotating(true);
+        const rect = imgRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+        const origRotation = elem.rotation || 0;
+        const onMove = (ev) => {
+            const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * (180 / Math.PI);
+            const newRot = Math.round(origRotation + angle - startAngle);
+            onUpdate({ rotation: newRot });
+        };
+        const onUp = () => {
+            setIsRotating(false);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    }, [elem.rotation, onUpdate]);
+
     return (
         <div
+            ref={imgRef}
             className={`slide-element slide-element--image ${isSelected ? 'selected' : ''}`}
             style={{
                 position: 'absolute',
@@ -328,10 +410,12 @@ const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate
                 height: `${(elem.width || 300) / (elem.imageAspect || 1)}px`,
                 cursor: 'move',
                 userSelect: 'none',
+                transform: elem.rotation ? `rotate(${elem.rotation}deg)` : undefined,
             }}
             data-orig-x={elem.x}
             data-orig-y={elem.y}
             onPointerDown={(e) => {
+                if (isResizing || isRotating) return;
                 onPointerDown(e, elem.id);
                 onSelect?.();
             }}
@@ -346,20 +430,12 @@ const DraggableImageElement = React.memo(({ elem, isSelected, onSelect, onUpdate
                 style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
             />
             {isSelected && (
-                <div
-                    className="slide-resize-handle"
-                    onPointerDown={handleResizeStart}
-                    style={{
-                        position: 'absolute',
-                        right: -6,
-                        bottom: -6,
-                        width: 12,
-                        height: 12,
-                        background: '#cc3333',
-                        cursor: 'se-resize',
-                        borderRadius: 2,
-                    }}
-                />
+                <>
+                    <div className="slide-resize-handle" onPointerDown={handleResizeStart} style={{ position: 'absolute', right: -6, bottom: -6, width: 12, height: 12, background: '#cc3333', cursor: 'se-resize', borderRadius: 2, zIndex: 2 }} />
+                    <div className="slide-rotate-handle" onPointerDown={handleRotateStart} style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)', width: 14, height: 14, background: '#fff', border: '2px solid #cc3333', borderRadius: '50%', cursor: 'grab', zIndex: 2 }}>
+                        <svg viewBox="0 0 24 24" width="10" height="10" style={{ position: 'absolute', top: 1, left: 1 }}><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#cc3333"/></svg>
+                    </div>
+                </>
             )}
         </div>
     );
@@ -906,6 +982,55 @@ const CarouselEditor = ({ onClose }) => {
         setSelectedElementId(elem.id);
     }, [activeSlide, updateActiveElements]);
 
+    const convertSlideToElements = useCallback((slide) => {
+        if (slide.elements && slide.elements.length > 0) return slide.elements;
+        const elems = [];
+        const baseStyle = {
+            fontSize: 48,
+            fontFamily: slide.fontFamily || "'Cabin Sketch', cursive",
+            fontWeight: slide.fontWeight || 700,
+            color: slide.textColor || '#1A1A1A',
+            bold: false,
+            italic: false,
+            letterSpacing: 0,
+            textTransform: 'none',
+            textAlign: 'left',
+            lineHeight: 1.2,
+        };
+        if (slide.title) {
+            elems.push(DEFAULT_ELEMENT({
+                type: 'text',
+                x: 72,
+                y: 80,
+                width: 936,
+                text: slide.title,
+                style: { ...baseStyle, fontSize: 56, textAlign: slide.layout === 'big-text' ? 'center' : 'left' },
+            }));
+        }
+        if (slide.content) {
+            elems.push(DEFAULT_ELEMENT({
+                type: 'text',
+                x: 72,
+                y: slide.title ? 200 : 80,
+                width: 936,
+                text: slide.content,
+                style: { ...baseStyle, fontSize: 28, fontWeight: 400 },
+            }));
+        }
+        if (slide.bullets && slide.bullets.length > 0) {
+            const bulletText = slide.bullets.filter(Boolean).map((b, i) => `${i + 1}. ${b}`).join('\n');
+            elems.push(DEFAULT_ELEMENT({
+                type: 'text',
+                x: 72,
+                y: slide.title || slide.content ? 380 : 80,
+                width: 936,
+                text: bulletText,
+                style: { ...baseStyle, fontSize: 24, fontWeight: 400 },
+            }));
+        }
+        return elems.length > 0 ? elems : [DEFAULT_ELEMENT({ text: slide.title || 'Slide' })];
+    }, []);
+
     const addImageElement = useCallback((e) => {
         const file = e.target.files?.[0];
         if (!file || !activeSlide) return;
@@ -997,7 +1122,7 @@ const CarouselEditor = ({ onClose }) => {
             setGenerateError(null);
             try {
                 const generated = await generateCarousel(prompt, slideCount, mcqAnswers);
-                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: s.elements || [] })));
+                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: convertSlideToElements(s) })));
                 setActiveIndex(0);
                 setMcqQuestions(null);
                 setMcqAnswers({});
@@ -1028,7 +1153,7 @@ const CarouselEditor = ({ onClose }) => {
             setIsGenerating(true);
             try {
                 const generated = await generateCarousel(prompt, slideCount);
-                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: s.elements || [] })));
+                setSlides(generated.map(s => ({ ...s, branding: s.branding || DEFAULT_BRANDING(), elements: convertSlideToElements(s) })));
                 setActiveIndex(0);
             } catch (err2) {
                 setGenerateError(err2.message || 'Generation failed. Try again.');
