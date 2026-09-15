@@ -19,61 +19,77 @@ JSON structure:
 
 Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last = CTA. Titles under 8 words, content under 30 words.`;
 
-    // Collect all available Gemini keys
-    const keys = [
-        process.env.GEMINI_API_KEY,
-        process.env.GEMINI_API_KEY_2,
-    ].filter(Boolean);
+    // Provider chain: Groq (fast, generous free tier) → Gemini (backup)
+    const providers = [
+        {
+            name: 'Groq',
+            url: 'https://api.groq.com/openai/v1/chat/completions',
+            model: 'openai/gpt-oss-120b',
+            headers: {
+                'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            buildBody: (msg, tokens) => JSON.stringify({
+                model: 'openai/gpt-oss-120b',
+                messages: [{ role: 'user', content: msg }],
+                temperature: 0.7,
+                max_tokens: tokens,
+            }),
+            extractContent: (data) => data.choices?.[0]?.message?.content,
+        },
+        ...[
+            { key: process.env.GEMINI_API_KEY, name: 'Gemini Key 1' },
+            { key: process.env.GEMINI_API_KEY_2, name: 'Gemini Key 2' },
+        ].filter(k => k.key).map(({ key, name }) => ({
+            name,
+            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`,
+            model: 'gemini-3.6-flash',
+            headers: { 'Content-Type': 'application/json' },
+            buildBody: (msg, tokens) => JSON.stringify({
+                contents: [{ parts: [{ text: msg }] }],
+                generationConfig: { temperature: 0.7, maxOutputTokens: tokens },
+            }),
+            extractContent: (data) => data.candidates?.[0]?.content?.parts?.[0]?.text,
+        })),
+    ];
 
-    if (keys.length === 0) return res.status(500).json({ error: 'No API keys configured' });
+    const MAX_RETRIES = 2;
 
-    const MAX_RETRIES_PER_KEY = 2;
+    for (const provider of providers) {
+        if (!provider.headers['Authorization'] && !provider.url.includes('key=')) continue;
 
-    for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
-        const apiKey = keys[keyIdx];
-
-        for (let attempt = 0; attempt < MAX_RETRIES_PER_KEY; attempt++) {
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
             try {
                 const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 45000);
+                const timeout = setTimeout(() => controller.abort(), 30000);
 
-                const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: userMessage }] }],
-                            generationConfig: {
-                                temperature: 0.7,
-                                maxOutputTokens: maxTokens,
-                            },
-                        }),
-                        signal: controller.signal,
-                    }
-                );
+                const response = await fetch(provider.url, {
+                    method: 'POST',
+                    headers: provider.headers,
+                    body: provider.buildBody(userMessage, maxTokens),
+                    signal: controller.signal,
+                });
 
                 clearTimeout(timeout);
 
                 if (response.status === 429 || response.status === 503) {
                     const waitMs = (attempt + 1) * 3000;
-                    console.warn(`Key ${keyIdx + 1} attempt ${attempt + 1}: ${response.status} — waiting ${waitMs}ms`);
+                    console.warn(`${provider.name} ${response.status} — waiting ${waitMs}ms`);
                     await new Promise(r => setTimeout(r, waitMs));
-                    continue; // retry same key
+                    continue;
                 }
 
                 if (!response.ok) {
-                    const errText = await response.text();
-                    console.error(`Key ${keyIdx + 1} error:`, response.status, errText.slice(0, 300));
-                    break; // skip to next key
+                    console.error(`${provider.name} error: ${response.status}`);
+                    break; // skip to next provider
                 }
 
                 const data = await response.json();
-                const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                const content = provider.extractContent(data);
 
                 if (!content) {
-                    console.error('Empty response:', JSON.stringify(data).slice(0, 300));
-                    break; // skip to next key
+                    console.error(`${provider.name}: empty response`);
+                    break;
                 }
 
                 // Parse JSON
@@ -89,19 +105,13 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
                     parsed = JSON.parse(clean);
                 } catch (e) {
                     const start = clean.indexOf('{');
-                    if (start === -1) {
-                        console.error('No JSON:', clean.slice(0, 200));
-                        break;
-                    }
+                    if (start === -1) break;
                     let depth = 0, end = -1;
                     for (let i = start; i < clean.length; i++) {
                         if (clean[i] === '{') depth++;
                         else if (clean[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
                     }
-                    if (end === -1) {
-                        console.error('Unmatched braces');
-                        break;
-                    }
+                    if (end === -1) break;
                     parsed = JSON.parse(clean.substring(start, end + 1));
                 }
 
@@ -109,16 +119,14 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, last =
                     parsed.slides = [parsed.slides];
                 }
 
-                if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
-                    break;
-                }
+                if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) break;
 
+                console.log(`${provider.name}: SUCCESS — ${parsed.slides.length} slides`);
                 return res.status(200).json(parsed);
 
             } catch (err) {
-                console.error(`Key ${keyIdx + 1} attempt ${attempt + 1} error:`, err.message);
-                if (err.name === 'AbortError') continue; // retry same key
-                break; // skip to next key on other errors
+                console.error(`${provider.name} attempt ${attempt + 1}: ${err.message}`);
+                if (err.name !== 'AbortError') break;
             }
         }
     }
