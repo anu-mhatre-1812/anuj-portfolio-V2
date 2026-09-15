@@ -25,21 +25,14 @@ Each slide object must have: title (string), content (string), layout (one of: "
 
 Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, middle = value, last = CTA. Titles under 8 words, content under 30 words. Alternate layouts. Mostly light backgrounds.`;
 
-    const buildBody = (model) => {
-        const body = {
-            model,
-            messages: [
-                { role: 'user', content: systemPrompt },
-            ],
-            temperature: 0.7,
-            max_tokens: maxTokens,
-        };
-        // Force JSON output for models that support it
-        if (!model.includes('mimo')) {
-            body.response_format = { type: 'json_object' };
-        }
-        return JSON.stringify(body);
-    };
+    const buildBody = (model) => JSON.stringify({
+        model,
+        messages: [
+            { role: 'user', content: systemPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: maxTokens,
+    });
 
     const providers = [
         // 1. Google Gemini (most reliable, tested working)
@@ -144,6 +137,8 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, middle
             .replace(/<think>[\s\S]*?<\/think>/gi, '')
             .trim();
 
+        console.log('Raw AI content (first 300):', clean.slice(0, 300));
+
         // Try direct parse
         try {
             parsed = JSON.parse(clean);
@@ -171,8 +166,8 @@ Create exactly ${slideCount} slides about: ${prompt}. First slide = hook, middle
             parsed.slides = [parsed.slides];
         }
     } catch (e) {
-        console.error('Parse error, raw content:', content.slice(0, 300));
-        return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+        console.error('Parse error:', e.message, 'Raw (first 300):', content.slice(0, 300));
+        return res.status(500).json({ error: 'AI returned invalid JSON. Try again.', raw: content.slice(0, 200) });
     }
 
     if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
