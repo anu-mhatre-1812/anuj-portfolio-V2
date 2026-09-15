@@ -64,91 +64,81 @@ Rules:
         max_tokens: maxTokens,
     });
 
-    // --- Token Harbor (primary) ---
-    const TH_KEY = process.env.TOKENHARBOR_KEY;
-    const TH_URL = 'https://tokenharbor.ai/v1/chat/completions';
-    const thModels = [
-        'deepseek-v4.1-flash:free',
-        'deepseek-v4-flash:free',
-        'mimo-v2.5:free',
+    const providers = [
+        // 1. Token Harbor
+        {
+            name: 'Token Harbor',
+            url: 'https://tokenharbor.ai/v1/chat/completions',
+            key: process.env.TOKENHARBOR_KEY,
+            models: ['deepseek-v4.1-flash:free', 'deepseek-v4-flash:free', 'mimo-v2.5:free'],
+            timeout: 8000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
+        },
+        // 2. Groq
+        {
+            name: 'Groq',
+            url: 'https://api.groq.com/openai/v1/chat/completions',
+            key: process.env.GROQ_API_KEY,
+            models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'],
+            timeout: 10000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }),
+        },
+        // 3. OpenRouter
+        {
+            name: 'OpenRouter',
+            url: 'https://openrouter.ai/api/v1/chat/completions',
+            key: process.env.OPENROUTER_API_KEY,
+            models: ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemma-2-9b-it:free', 'mistralai/mistral-7b-instruct:free'],
+            timeout: 10000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://anujmhatre.me', 'X-Title': 'Anuj Portfolio' }),
+        },
+        // 4. OpenCode Zen (last resort)
+        {
+            name: 'OpenCode Zen',
+            url: 'https://opencode.ai/zen/v1/chat/completions',
+            key: process.env.ZEN_API_KEY,
+            models: ['mimo-v2.5-free'],
+            timeout: 12000,
+            headers: (key) => ({ 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'x-opencode-session': `carousel-${Date.now()}` }),
+        },
     ];
-
-    // --- OpenCode Zen (fallback) ---
-    const ZEN_KEY = process.env.ZEN_API_KEY;
-    const ZEN_URL = 'https://opencode.ai/zen/v1/chat/completions';
-    const zenModels = ['mimo-v2.5-free'];
 
     let apiRes;
     let lastError = '';
 
-    // Try Token Harbor models first
-    if (TH_KEY) {
-        for (const model of thModels) {
+    for (const provider of providers) {
+        if (!provider.key) continue;
+
+        for (const model of provider.models) {
             let response;
             try {
-                response = await fetch(TH_URL, {
+                response = await fetch(provider.url, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${TH_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
+                    headers: provider.headers(provider.key),
                     body: buildBody(model),
-                    signal: AbortSignal.timeout(8000),
+                    signal: AbortSignal.timeout(provider.timeout),
                 });
             } catch (error) {
                 lastError = error.name === 'TimeoutError' ? `${model} timed out` : error.message;
-                console.warn(`Token Harbor ${model} failed:`, lastError);
+                console.warn(`${provider.name} ${model} failed:`, lastError);
                 continue;
             }
 
             if (response.ok) {
                 apiRes = response;
+                console.log(`Using ${provider.name} model: ${model}`);
                 break;
             }
 
             lastError = await response.text();
-            console.warn(`Token Harbor ${model} returned ${response.status}:`, lastError);
+            console.warn(`${provider.name} ${model} returned ${response.status}:`, lastError);
 
             if (response.status !== 429 && response.status !== 503) {
                 return res.status(response.status).json({ error: `AI API error: ${response.status}` });
             }
         }
-    }
 
-    // Fallback to OpenCode Zen
-    if (!apiRes && ZEN_KEY) {
-        console.warn('Token Harbor exhausted, trying OpenCode Zen');
-        for (const model of zenModels) {
-            let response;
-            try {
-                response = await fetch(ZEN_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ZEN_KEY}`,
-                        'Content-Type': 'application/json',
-                        'x-opencode-session': `carousel-${Date.now()}`,
-                    },
-                    body: buildBody(model),
-                    signal: AbortSignal.timeout(12000),
-                });
-            } catch (error) {
-                lastError = error.name === 'TimeoutError' ? `OpenCode ${model} timed out` : error.message;
-                console.warn(`OpenCode ${model} failed:`, lastError);
-                continue;
-            }
-
-            if (response.ok) {
-                apiRes = response;
-                break;
-            }
-
-            lastError = await response.text();
-            console.warn(`OpenCode ${model} returned ${response.status}:`, lastError);
-
-            if (response.status !== 429 && response.status !== 503) {
-                return res.status(response.status).json({ error: `AI API error: ${response.status}` });
-            }
-        }
+        if (apiRes) break;
     }
 
     if (!apiRes) {
