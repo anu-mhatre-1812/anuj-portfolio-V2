@@ -6,6 +6,7 @@ import GalleryRoom from '../rooms/Gallery/GalleryRoom';
 import StudioRoom from '../rooms/Studio/StudioRoom';
 import AboutRoom from '../rooms/About/AboutRoom';
 import ContactRoom from '../rooms/Contact/ContactRoom';
+import CarouselRoom from '../rooms/Carousel/CarouselRoom';
 import { isSanityDataLoaded } from '../../../hooks/useSanityData';
 
 /**
@@ -104,6 +105,11 @@ const RoomWarmup = ({ onWarmupComplete, isLowTier }) => {
             <Suspense fallback={null}>
                 <group position={[20, 0, -50]}>
                     <ContactRoom showRoom={true} onReady={noop} isExiting={false} isWarmup={true} />
+                </group>
+            </Suspense>
+            <Suspense fallback={null}>
+                <group position={[0, 0, -100]}>
+                    <CarouselRoom showRoom={true} onReady={noop} isWarmup={true} />
                 </group>
             </Suspense>
         </group>

@@ -117,29 +117,68 @@ Rules:
 - Every slide must feel like part of one designed system`;
 
         try {
-          const apiRes = await fetch('https://opencode.ai/zen/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-              'x-opencode-session': `portfolio-${Date.now()}`,
-            },
-            body: JSON.stringify({
-              model: 'mimo-v2.5-free',
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
-              ],
-              temperature: 0.7,
-              max_tokens: 16000,
-            }),
-          });
+          // Free Zen models can have independent capacity limits. Start with the requested
+          // Nemotron model, then fail over once rather than returning a transient 429 to users.
+          const models = [
+            'nemotron-3.5-lightning-free',
+            'nemotron-3-ultra-free',
+            'mimo-v2.5-free',
+          ];
+          let apiRes;
+          let lastError = '';
 
-          if (!apiRes.ok) {
-            const errText = await apiRes.text();
-            console.error('Zen API error:', apiRes.status, errText);
-            res.writeHead(apiRes.status, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: `AI API error: ${apiRes.status}` }));
+          for (const model of models) {
+            let response;
+            try {
+              response = await fetch('https://opencode.ai/zen/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${apiKey}`,
+                  'Content-Type': 'application/json',
+                  'x-opencode-session': `portfolio-${Date.now()}`,
+                },
+                body: JSON.stringify({
+                  model,
+                  messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Create a ${slideCount}-slide Instagram carousel about: ${prompt}` },
+                  ],
+                  temperature: 0.7,
+                  max_tokens: 16000,
+                }),
+                // A free model can occasionally accept but never finish a request.
+                // Move to the next provider quickly instead of leaving the editor stuck.
+                signal: AbortSignal.timeout(8000),
+              });
+            } catch (error) {
+              lastError = error.name === 'TimeoutError'
+                ? `${model} timed out`
+                : error.message;
+              console.warn(`Zen model ${model} request failed:`, lastError);
+              continue;
+            }
+
+            if (response.ok) {
+              apiRes = response;
+              break;
+            }
+
+            lastError = await response.text();
+            console.warn(`Zen model ${model} returned ${response.status}:`, lastError);
+
+            // Non-capacity errors (invalid key, bad request, etc.) cannot be solved by
+            // switching models, so return them immediately.
+            if (response.status !== 429 && response.status !== 503) {
+              res.writeHead(response.status, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: `AI API error: ${response.status}` }));
+              return;
+            }
+          }
+
+          if (!apiRes) {
+            console.error('All free Zen models are temporarily unavailable:', lastError);
+            res.writeHead(429, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Free AI models are busy. Please wait a minute and try again.' }));
             return;
           }
 

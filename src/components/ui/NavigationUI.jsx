@@ -8,9 +8,6 @@ import AchievementPopup from './AchievementPopup';
 import AchievementsPanel from './AchievementsPanel';
 import '../../styles/NavigationUI.scss';
 
-// Rooms without corridor doors (map-only access)
-const DOORLESS_ROOMS = new Set(['carousel']);
-
 // Room data for the map - positions are percentages on the map image
 // These positions correspond to the visual elements on the map
 const ROOMS = [
@@ -25,7 +22,7 @@ const ROOMS = [
 const PIN_START_POSITION = { x: 50.5, y: 97 };
 
 const NavigationUI = () => {
-    const { currentRoom, isInRoom, requestExit, exitRoom, hasEntered, teleportTo, isTeleporting } = useScene();
+    const { currentRoom, isInRoom, requestExit, hasEntered, teleportTo, isTeleporting } = useScene();
     const { isMuted, toggleMute, globalVolume, setGlobalVolume } = useAudio();
     const { showTutorial, unlockAchievement } = useAchievements();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -215,13 +212,8 @@ const NavigationUI = () => {
 
     const handleBackClick = () => {
         setIsExiting(true);
-        if (DOORLESS_ROOMS.has(currentRoom)) {
-            // Doorless room: skip DoorSection animation, directly exit
-            exitRoom();
-        } else {
-            // Normal room: DoorSection handles exit animation
-            requestExit();
-        }
+        // Every room, including Carousel, now exits through its corridor door.
+        requestExit();
     };
 
     return (

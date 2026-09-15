@@ -81,6 +81,16 @@ const CorridorSegment = ({
                 icon: '✉',
                 color: '#f5e6e6'
             },
+            {
+                // Carousel sits directly opposite Contact, sharing the same corridor Z position.
+                id: `carousel-${segmentIndex}`,
+                roomId: 'carousel',
+                relativeZ: -62,
+                side: 'left',
+                label: 'CAROUSEL LAB',
+                icon: '◆',
+                color: '#e8e6f5'
+            },
         ];
 
         return doorDefs.map(def => {

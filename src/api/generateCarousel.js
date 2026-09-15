@@ -2,7 +2,7 @@
  * generateCarousel — Client-side API caller for AI carousel generation.
  *
  * Calls the local Vite proxy at /api/generateCarousel which forwards
- * to OpenCode Zen (MiMo-2.5 Free) with the API key stored server-side.
+ * to OpenCode Zen with the API key stored server-side.
  *
  * In production (Vercel), this would call a serverless function instead.
  */
@@ -32,7 +32,9 @@ export async function generateCarousel(prompt, slideCount = 5, retries = 2) {
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ error: 'Network error' }));
-                throw new Error(err.error || `API error ${res.status}`);
+                const error = new Error(err.error || `API error ${res.status}`);
+                error.status = res.status;
+                throw error;
             }
 
             const data = await res.json();
@@ -56,6 +58,9 @@ export async function generateCarousel(prompt, slideCount = 5, retries = 2) {
             }));
         } catch (err) {
             lastError = err;
+            // The server already tries each free Zen model once. Retrying a 429 from the
+            // browser immediately only increases pressure on an already busy free tier.
+            if (err.status === 429) break;
             if (attempt < retries) {
                 await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
             }

@@ -9,11 +9,8 @@ const DOOR_POSITIONS_Z = {
     'studio': -20,   // 10 - 32 + 2
     'about': -36,    // 10 - 48 + 2
     'contact': -50,  // 10 - 62 + 2
-    'carousel': -50  // No corridor door — uses same Z as contact, teleports directly into room
+    'carousel': -50  // Opposite the Contact door: 10 - 62 + 2
 };
-
-// Rooms that have no corridor door (map-only access)
-const DOORLESS_ROOMS = new Set(['carousel']);
 
 /**
  * TeleportRoom Component
@@ -32,9 +29,6 @@ const TeleportRoom = memo(() => {
         teleportPhase,
         openTeleportTransition,
         completeTeleport,
-        signalRoomReady,
-        enterRoom,
-        openOverlay,
         isFastTeleport,
         isTeleporting
     } = useScene();
@@ -63,16 +57,7 @@ const TeleportRoom = memo(() => {
 
                 // Small delay to ensure frame update
                 setTimeout(() => {
-                    if (DOORLESS_ROOMS.has(teleportTarget)) {
-                        // DOORLESS ROOM: No corridor door exists — skip door click,
-                        // directly enter the room and open its overlay
-                        // All state changes in same tick to prevent flash
-                        enterRoom(teleportTarget);
-                        if (teleportTarget === 'carousel') {
-                            openOverlay({ layout: 'carousel_editor', title: 'CAROUSEL' });
-                        }
-                        signalRoomReady();
-                    } else if (isFastTeleport) {
+                    if (isFastTeleport) {
                         // FAST TELEPORT: Skip paper open, go straight to door click
                         // Paper stays closed, DoorSection will call signalRoomReady when done
                         completeTeleport();
@@ -88,7 +73,7 @@ const TeleportRoom = memo(() => {
         if (!isTeleporting) {
             hasPositioned.current = false;
         }
-    }, [teleportPhase, teleportTarget, isTeleporting, isFastTeleport, camera, openTeleportTransition, completeTeleport, enterRoom, openOverlay, signalRoomReady]);
+    }, [teleportPhase, teleportTarget, isTeleporting, isFastTeleport, camera, openTeleportTransition, completeTeleport]);
 
     // Don't render anything - we just manipulate camera
     return null;
