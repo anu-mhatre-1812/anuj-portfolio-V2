@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Missing prompt' });
 
     const slideCount = Math.min(50, Math.max(2, parseInt(reqCount, 10) || 5));
-    const maxTokens = mode === 'questions' ? 2000 : Math.min(16000, Math.max(8192, slideCount * 800));
+    const maxTokens = mode === 'questions' ? 2000 : Math.min(32768, Math.max(8192, slideCount * 1000));
 
     const questionsMessage = `You are a carousel content strategist. The user wants to create a carousel about: "${prompt}"
 
@@ -78,7 +78,7 @@ VARY fonts between heading fonts (Cabin Sketch, Rubik Scribble) and body fonts (
             buildBody: (msg, tokens) => JSON.stringify({
                 model: 'openai/gpt-oss-120b',
                 messages: [
-                    { role: 'system', content: 'You are a world-class content strategist and copywriter. You create viral carousel content that educates, entertains, and converts. Write with authority, use specific data and examples, and make every word count. Never be generic — be specific, bold, and memorable.' },
+                    { role: 'system', content: 'You are a world-class content strategist and copywriter. You create viral carousel content that educates, entertains, and converts. Write with authority, use specific data and examples, and make every word count. Never be generic — be specific, bold, and memorable. IMPORTANT: Output ONLY valid JSON, no markdown fences, no explanation.' },
                     { role: 'user', content: msg }
                 ],
                 temperature: 0.75,
