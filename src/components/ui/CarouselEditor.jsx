@@ -36,6 +36,12 @@ const LAYOUT_OPTIONS = [
     { id: 'big-text', label: 'Big Text' },
     { id: 'split', label: 'Split Layout' },
     { id: 'quote', label: 'Quote / Statement' },
+    { id: 'two-column', label: 'Two Column' },
+    { id: 'stats', label: 'Stats / Numbers' },
+    { id: 'checklist', label: 'Checklist' },
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'testimonial', label: 'Testimonial' },
+    { id: 'image-overlay', label: 'Image Overlay' },
 ];
 
 const SHAPE_OPTIONS = [
@@ -229,6 +235,128 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
                             {slide.title || 'Quote goes here'}
                         </h1>
                         <p className="slide-content">{slide.content || ''}</p>
+                    </div>
+                );
+            case 'two-column':
+                return (
+                    <div className="slide-layout-twocol">
+                        <div className="slide-twocol-left">
+                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                                {slide.title || 'Left Column'}
+                            </h1>
+                            <p className="slide-content">{slide.content || 'Content goes here...'}</p>
+                        </div>
+                        <div className="slide-twocol-divider" />
+                        <div className="slide-twocol-right">
+                            <ul className="slide-bullets">
+                                {(slide.bullets || []).filter(Boolean).map((b, i) => (
+                                    <li key={i} className="slide-bullet-item">{b}</li>
+                                ))}
+                                {!(slide.bullets || []).filter(Boolean).length && (
+                                    <li className="slide-bullet-item">Add points in the editor</li>
+                                )}
+                            </ul>
+                        </div>
+                    </div>
+                );
+            case 'stats':
+                return (
+                    <div className="slide-layout-stats">
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            {slide.title || 'Key Stats'}
+                        </h1>
+                        <div className="slide-stats-grid">
+                            {(slide.bullets || []).filter(Boolean).map((b, i) => (
+                                <div key={i} className="slide-stat-card">
+                                    <span className="slide-stat-number">{String(i + 1).padStart(2, '0')}</span>
+                                    <span className="slide-stat-text">{b}</span>
+                                </div>
+                            ))}
+                            {!(slide.bullets || []).filter(Boolean).length && (
+                                <>
+                                    <div className="slide-stat-card"><span className="slide-stat-number">01</span><span className="slide-stat-text">Add stats</span></div>
+                                    <div className="slide-stat-card"><span className="slide-stat-number">02</span><span className="slide-stat-text">in the editor</span></div>
+                                </>
+                            )}
+                        </div>
+                        <p className="slide-content" style={{ marginTop: '32px' }}>{slide.content || ''}</p>
+                    </div>
+                );
+            case 'checklist':
+                return (
+                    <div className="slide-layout-checklist">
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            {slide.title || 'Checklist'}
+                        </h1>
+                        <p className="slide-content">{slide.content || ''}</p>
+                        <ul className="slide-checklist">
+                            {(slide.bullets || []).filter(Boolean).map((b, i) => (
+                                <li key={i} className="slide-checklist-item">
+                                    <span className="slide-checklist-box">✓</span>
+                                    <span className="slide-checklist-text">{b}</span>
+                                </li>
+                            ))}
+                            {!(slide.bullets || []).filter(Boolean).length && (
+                                <li className="slide-checklist-item"><span className="slide-checklist-box">✓</span><span className="slide-checklist-text">Add items in the editor</span></li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            case 'timeline':
+                return (
+                    <div className="slide-layout-timeline">
+                        <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            {slide.title || 'Timeline'}
+                        </h1>
+                        <div className="slide-timeline">
+                            {(slide.bullets || []).filter(Boolean).map((b, i) => (
+                                <div key={i} className="slide-timeline-item">
+                                    <div className="slide-timeline-dot" />
+                                    <div className="slide-timeline-content">
+                                        <span className="slide-timeline-label">Step {i + 1}</span>
+                                        <span className="slide-timeline-text">{b}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {!(slide.bullets || []).filter(Boolean).length && (
+                                <>
+                                    <div className="slide-timeline-item"><div className="slide-timeline-dot" /><div className="slide-timeline-content"><span className="slide-timeline-label">Step 1</span><span className="slide-timeline-text">Add steps</span></div></div>
+                                    <div className="slide-timeline-item"><div className="slide-timeline-dot" /><div className="slide-timeline-content"><span className="slide-timeline-label">Step 2</span><span className="slide-timeline-text">in the editor</span></div></div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            case 'testimonial':
+                return (
+                    <div className="slide-layout-testimonial">
+                        <div className="slide-testimonial-quote">"</div>
+                        <h1 className="slide-title slide-title--testimonial" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                            {slide.title || ' testimonial goes here'}
+                        </h1>
+                        <div className="slide-testimonial-author">
+                            <div className="slide-testimonial-avatar">{(slide.content || 'A')[0].toUpperCase()}</div>
+                            <div className="slide-testimonial-info">
+                                <span className="slide-testimonial-name">{slide.content || 'Author Name'}</span>
+                                <span className="slide-testimonial-role">{(slide.bullets || [])[0] || 'Role / Company'}</span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'image-overlay':
+                return (
+                    <div className="slide-layout-imgoverlay">
+                        {slide.imageUrl ? (
+                            <img src={slide.imageUrl} alt="" className="slide-imgoverlay-bg" />
+                        ) : (
+                            <div className="slide-imgoverlay-placeholder">Upload image in editor</div>
+                        )}
+                        <div className="slide-imgoverlay-content">
+                            <h1 className="slide-title" style={{ fontFamily: slide.fontFamily, fontWeight: slide.fontWeight }}>
+                                {slide.title || 'Image Title'}
+                            </h1>
+                            <p className="slide-content">{slide.content || ''}</p>
+                        </div>
                     </div>
                 );
             case 'hook-content-cta':
