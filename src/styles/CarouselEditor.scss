@@ -896,6 +896,19 @@
   margin: 0 0.1rem;
 }
 
+.ce-float-range {
+  width: 3rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: #cc3333;
+}
+
+.slide-logo-element {
+  &:hover {
+    outline: 2px dashed rgba(204, 51, 51, 0.5);
+  }
+}
+
 // ─── Layout: Two Column ──────────────────────────────
 .slide-layout-twocol {
   display: flex;

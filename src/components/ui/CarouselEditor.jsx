@@ -57,6 +57,9 @@ const DEFAULT_BRANDING = () => ({
     logoUrl: null,
     fontSize: 24,
     logoSize: 32,
+    logoX: 880,
+    logoY: 1280,
+    logoOpacity: 0.5,
     opacity: 0.5,
     position: 'bottom-right',
 });
@@ -253,7 +256,7 @@ const DraggableTextElement = React.memo(({ elem, isSelected, onSelect, onUpdate,
 DraggableTextElement.displayName = 'DraggableTextElement';
 
 /* ─── SlideCanvas ────────────────────────────────────── */
-const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelectElement, onUpdateElement, showGrid }, ref) => {
+const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelectElement, onUpdateElement, onBrandingUpdate, showGrid }, ref) => {
     const width = 1080;
     const height = 1350;
     const branding = slide.branding || DEFAULT_BRANDING();
@@ -524,20 +527,59 @@ const SlideCanvas = React.forwardRef(({ slide, scale, selectedElementId, onSelec
 
             {/* Branding Footer */}
             <div className={`slide-footer slide-footer--${branding.position}`}>
-                {branding.logoUrl && (
-                    <img src={branding.logoUrl} alt="" className="slide-footer-logo" style={{ height: `${branding.logoSize || 32}px`, opacity: branding.opacity }} />
-                )}
                 <span className="slide-footer-text" style={{ fontSize: `${branding.fontSize}px`, opacity: branding.opacity }}>
                     {branding.text}
                 </span>
             </div>
+
+            {/* Draggable Logo */}
+            {branding.logoUrl && (
+                <img
+                    src={branding.logoUrl}
+                    alt=""
+                    className="slide-logo-element"
+                    style={{
+                        position: 'absolute',
+                        left: `${branding.logoX}px`,
+                        top: `${branding.logoY}px`,
+                        height: `${branding.logoSize || 32}px`,
+                        opacity: branding.logoOpacity ?? branding.opacity,
+                        cursor: 'move',
+                        userSelect: 'none',
+                        zIndex: 10,
+                    }}
+                    draggable={false}
+                    onPointerDown={(e) => {
+                        e.stopPropagation();
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const origX = branding.logoX;
+                        const origY = branding.logoY;
+                        const scaleRatio = scale || 1;
+
+                        const onMove = (ev) => {
+                            const newX = origX + (ev.clientX - startX) / scaleRatio;
+                            const newY = origY + (ev.clientY - startY) / scaleRatio;
+                            onUpdateElement?.(slide.elements || []);
+                            const newBranding = { ...branding, logoX: Math.max(0, Math.min(1080 - 100, newX)), logoY: Math.max(0, Math.min(1350 - 50, newY)) };
+                            onBrandingUpdate?.(newBranding);
+                        };
+                        const onUp = () => {
+                            window.removeEventListener('pointermove', onMove);
+                            window.removeEventListener('pointerup', onUp);
+                        };
+                        window.addEventListener('pointermove', onMove);
+                        window.addEventListener('pointerup', onUp);
+                    }}
+                />
+            )}
         </div>
     );
 });
 SlideCanvas.displayName = 'SlideCanvas';
 
 /* ─── Floating Toolbar ───────────────────────────────── */
-const FloatingToolbar = ({ element, onUpdate, onShapeChange, onDelete }) => {
+const FloatingToolbar = ({ element, onUpdate, onShapeChange, onDelete, onDuplicate }) => {
     if (!element) return null;
     const s = element.style || {};
 
@@ -625,6 +667,56 @@ const FloatingToolbar = ({ element, onUpdate, onShapeChange, onDelete }) => {
                 </>
             )}
             <div className="ce-float-divider" />
+            <div className="ce-float-group">
+                <select
+                    className="ce-float-select"
+                    value={s.fontFamily || "'Cabin Sketch', cursive"}
+                    onChange={(e) => onUpdate({ style: { ...s, fontFamily: e.target.value } })}
+                    title="Font Family"
+                >
+                    {FONT_OPTIONS.map(f => <option key={f.label} value={f.value}>{f.label}</option>)}
+                </select>
+            </div>
+            <div className="ce-float-divider" />
+            <div className="ce-float-group">
+                <input
+                    type="color"
+                    className="ce-float-color"
+                    value={s.color || '#1A1A1A'}
+                    onChange={(e) => onUpdate({ style: { ...s, color: e.target.value } })}
+                    title="Text Color"
+                />
+            </div>
+            <div className="ce-float-divider" />
+            <div className="ce-float-group">
+                <input
+                    type="range"
+                    className="ce-float-range"
+                    min={0.1}
+                    max={1}
+                    step={0.1}
+                    value={element.opacity ?? 1}
+                    onChange={(e) => onUpdate({ opacity: parseFloat(e.target.value) })}
+                    title="Opacity"
+                />
+                <span className="ce-float-unit">{Math.round((element.opacity ?? 1) * 100)}%</span>
+            </div>
+            <div className="ce-float-divider" />
+            <div className="ce-float-group">
+                <input
+                    type="number"
+                    className="ce-float-input ce-float-input--small"
+                    value={s.lineHeight || 1.2}
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    onChange={(e) => onUpdate({ style: { ...s, lineHeight: parseFloat(e.target.value) || 1.2 } })}
+                    title="Line Height"
+                />
+                <span className="ce-float-unit">lh</span>
+            </div>
+            <div className="ce-float-divider" />
+            <button className="ce-float-btn" onClick={onDuplicate} title="Duplicate">⧉</button>
             <button className="ce-float-btn ce-float-btn--danger" onClick={onDelete}>×</button>
         </div>
     );
@@ -927,6 +1019,13 @@ const CarouselEditor = ({ onClose }) => {
                                 onUpdate={(updates) => updateElement(selectedElementId, updates)}
                                 onShapeChange={(shape) => updateElement(selectedElementId, { shape })}
                                 onDelete={() => deleteElement(selectedElementId)}
+                                onDuplicate={() => {
+                                    const orig = (activeSlide.elements || []).find(el => el.id === selectedElementId);
+                                    if (orig) {
+                                        const dup = { ...orig, id: Date.now() + Math.random(), x: (orig.x || 0) + 20, y: (orig.y || 0) + 20, text: orig.text };
+                                        updateActiveElements([...(activeSlide.elements || []), dup]);
+                                    }
+                                }}
                             />
                             <div className="ce-canvas-wrapper" style={{ width: 1080 * canvasScale, height: 1350 * canvasScale }}>
                                 <SlideCanvas
@@ -936,6 +1035,7 @@ const CarouselEditor = ({ onClose }) => {
                                     selectedElementId={selectedElementId}
                                     onSelectElement={(id) => { setSelectedElementId(id); }}
                                     onUpdateElement={updateActiveElements}
+                                    onBrandingUpdate={(b) => updateSlide(activeIndex, { branding: b })}
                                     showGrid={showGrid}
                                 />
                             </div>
